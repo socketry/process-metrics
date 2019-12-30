@@ -12,6 +12,10 @@ To add it to your current project:
 
 ## Usage
 
+Memory is measured in kilobytes and time is measured in seconds.
+
+### Capturing for specific PID
+
 ```ruby
 #!/usr/bin/env ruby
 
@@ -43,7 +47,60 @@ pp metrics
 #     :maps=>150}}]
 ```
 
-Memory is measured in kilobytes and time is measured in seconds.
+### Capturing for specific PGID (Process Group)
+
+```ruby
+#!/usr/bin/env ruby
+
+require 'process/metrics'
+
+metrics = Process::Metrics.capture(pgid: ENV['PGID'].to_i)
+
+pp metrics
+# [{:pid=>68558,
+#   :pgid=>68558,
+#   :pcpu=>0.0,
+#   :time=>0,
+#   :vsz=>94516,
+#   :rss=>23612,
+#   :etime=>39064,
+#   :command=>"supervisor",
+#   :memory=>
+#    {:total=>94520,
+#     :rss=>23612,
+#     :pss=>7528,
+#     :shared_clean=>4416,
+#     :shared_dirty=>14492,
+#     :private_clean=>0,
+#     :private_dirty=>4704,
+#     :referenced=>11140,
+#     :anonymous=>19196,
+#     :swap=>0,
+#     :swap_pss=>0,
+#     :maps=>294}},
+#  {:pid=>68559,
+#   :pgid=>68558,
+#   :pcpu=>0.0,
+#   :time=>0,
+#   :vsz=>95000,
+#   :rss=>25136,
+#   :etime=>39064,
+#   :command=>"Falcon Host for hello.localhost",
+#   :memory=>
+#    {:total=>95004,
+#     :rss=>25136,
+#     :pss=>9306,
+#     :shared_clean=>5504,
+#     :shared_dirty=>11784,
+#     :private_clean=>0,
+#     :private_dirty=>7848,
+#     :referenced=>17592,
+#     :anonymous=>19632,
+#     :swap=>0,
+#     :swap_pss=>0,
+#     :maps=>295}},
+# ... snip ...
+```
 
 ## Contributing
 
