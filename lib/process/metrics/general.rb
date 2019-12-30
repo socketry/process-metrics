@@ -21,10 +21,18 @@
 # THE SOFTWARE.
 
 require_relative 'memory'
+require 'set'
 
 module Process
 	module Metrics
 		PS = "ps"
+		
+		# According to the linux manual page specifications.
+		def self.duration(value)
+			if /((?<days>\d\d)\-)?((?<hours>\d\d):)?(?<minutes>\d\d):(?<seconds>\d\d)?/ =~ value
+				(((days&.to_i || 0) * 24 + (hours&.to_i || 0)) * 60 + (minutes&.to_i || 0)) * 60 + seconds&.to_i
+			end
+		end
 		
 		# pid: Process Identifier
 		# pmem: Percentage Memory used.
@@ -34,36 +42,54 @@ module Process
 		# rss: Resident Set Size in kilobytes
 		# etime: The process elapsed time.
 		# command: The name of the process.
-		COLUMNS = [:pid, :pmem, :pcpu, :time, :vsz, :rss, :etime, :command]
+		FIELDS = {
+			pid: ->(value){value.to_i},
+			pgid: ->(value){value.to_i},
+			pcpu: ->(value){value.to_f},
+			time: self.method(:duration),
+			vsz: ->(value){value.to_i},
+			rss: ->(value){value.to_i},
+			etime: self.method(:duration),
+			command: ->(value){value},
+		}
 		
-		def self.pidlist(pid)
-			Array(pid).join(",")
+		def self.set(ids)
+			Set.new(Array(ids))
 		end
 		
-		def self.capture(pid: nil, gid: nil, ps: PS, columns: COLUMNS)
+		def self.capture(pid: nil, pgid: nil, ps: PS, fields: FIELDS)
 			input, output = IO.pipe
 			
-			arguments = [ps, "-o", columns.join(',')]
+			arguments = [ps]
 			
-			if pid
-				arguments.push("-p", pidlist(pid))
+			if pid && pgid.nil?
+				arguments.push("-p", Array(pid).join(','))
+			else
+				arguments.push("ax")
 			end
 			
-			if gid
-				arguments.push("-g", pidlist(gid))
-			end
+			arguments.push("-o", fields.keys.join(','))
 			
-			system(*arguments, out: output, pgroup: true)
+			child_pid = Process.spawn(*arguments, out: output, pgroup: true)
 			
 			output.close
 			
 			header, *lines = input.readlines.map(&:strip)
 			
-			# keys = header.split(/\s+/).map(&:downcase)
-			keys = columns
-			
 			processes = lines.map do |line|
-				keys.zip(line.split(/\s+/, keys.size)).to_h
+				fields.
+					zip(line.split(/\s+/, fields.size)).
+					map{|(key, type), value| [key, type.call(value)]}.
+					to_h
+			end
+			
+			if pgid
+				pid = set(pid)
+				pgid = set(pgid)
+				
+				processes.select! do |process|
+					pgid.include?(process[:pgid]) || pid.include?(process[:pid])
+				end
 			end
 			
 			if Memory.supported?
@@ -75,6 +101,8 @@ module Process
 			end
 			
 			return processes
+		ensure
+			Process.wait(child_pid) if child_pid
 		end
 	end
 end

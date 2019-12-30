@@ -25,6 +25,38 @@ RSpec.describe Process::Metrics do
 		expect(Process::Metrics::VERSION).not_to be nil
 	end
 	
+	# This format is loosely defined by the manual page.
+	describe '.duration' do
+		it 'can parse minutes and seconds' do
+			expect(Process::Metrics.duration("00:00")).to be == 0
+			expect(Process::Metrics.duration("00:01")).to be == 1
+			expect(Process::Metrics.duration("01:00")).to be == 60
+			expect(Process::Metrics.duration("01:01")).to be == 61
+		end
+		
+		it 'can parse hours, minutes and seconds' do
+			expect(Process::Metrics.duration("00:00:00")).to be == 0
+			expect(Process::Metrics.duration("00:00:01")).to be == 1
+			expect(Process::Metrics.duration("01:00:00")).to be == 3600
+			expect(Process::Metrics.duration("01:00:01")).to be == 3601
+			expect(Process::Metrics.duration("01:01:01")).to be == 3661
+		end
+		
+		it 'can parse days, hours, minutes and seconds' do
+			expect(Process::Metrics.duration("00-00:00:00")).to be == 0
+			expect(Process::Metrics.duration("00-00:00:01")).to be == 1
+			expect(Process::Metrics.duration("01-00:00:00")).to be == 86400
+			expect(Process::Metrics.duration("01-01:01:01")).to be == (86400 + 3661)
+		end
+		
+		it 'can parse days, minutes and seconds' do
+			expect(Process::Metrics.duration("00-00:00")).to be == 0
+			expect(Process::Metrics.duration("00-00:01")).to be == 1
+			expect(Process::Metrics.duration("01-00:00")).to be == 86400
+			expect(Process::Metrics.duration("01-01:01")).to be == (86400 + 61)
+		end
+	end
+	
 	describe '.capture' do
 		subject {Process::Metrics.capture(pid: Process.pid).first}
 		
@@ -32,6 +64,26 @@ RSpec.describe Process::Metrics do
 			is_expected.to include(
 				:pid, :pcpu, :vsz, :rss, :etime
 			)
+		end
+	end
+	
+	describe '.capture' do
+		subject {Process::Metrics.capture(pgid: Process.getpgrp)}
+		
+		it "can get memory usage for current process group" do
+			pid = Process.spawn("sleep 10")
+			
+			sleep 5
+			
+			expect(subject.size).to be >= 2
+			
+			command = subject.find{|process| process[:command].include?("sleep")}
+			expect(command).to_not be_nil
+			
+			expect(command[:etime]).to be_within(1).of(5)
+			
+			Process.kill(:TERM, pid)
+			Process.wait(pid)
 		end
 	end
 end
