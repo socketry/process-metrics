@@ -20,28 +20,30 @@ require 'process/metrics'
 metrics = Process::Metrics.capture(pid: Process.pid)
 
 pp metrics
-# [{:pid=>"232329",
-#   :pmem=>"0.0",
-#   :pcpu=>"0.0",
-#   :time=>"00:00:00",
-#   :vsz=>"78532",
-#   :rss=>"14056",
-#   :etime=>"00:00",
-#   :command=>"ruby /tmp/3a1a16da-7de6-4d29-a9de-5d7be1f3bff6",
+# [{:pid=>274305,
+#   :pgid=>274305,
+#   :pcpu=>0.0,
+#   :time=>0,
+#   :vsz=>78808,
+#   :rss=>14324,
+#   :etime=>0,
+#   :command=>"ruby /tmp/028e1ca9-409b-478d-81b0-062f4f947962",
 #   :memory=>
-#    {:total=>78536,
-#     :rss=>14284,
-#     :pss=>8983,
-#     :shared_clean=>5628,
+#    {:total=>78812,
+#     :rss=>14508,
+#     :pss=>9187,
+#     :shared_clean=>5652,
 #     :shared_dirty=>0,
-#     :private_clean=>72,
-#     :private_dirty=>8584,
-#     :referenced=>14284,
-#     :anonymous=>8584,
+#     :private_clean=>56,
+#     :private_dirty=>8800,
+#     :referenced=>14508,
+#     :anonymous=>8800,
 #     :swap=>0,
 #     :swap_pss=>0,
 #     :maps=>150}}]
 ```
+
+Memory is measured in kilobytes and time is measured in seconds.
 
 ## Contributing
 
