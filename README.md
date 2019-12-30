@@ -106,7 +106,7 @@ pp metrics
 
 Released under the MIT license.
 
-Copyright, 2019, by [Samuel G. D. Williams](http://www.codeotaku.com).
+Copyright, 2019, by [Samuel G. D. Williams](https://www.codeotaku.com).
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal
