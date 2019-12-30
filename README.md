@@ -133,6 +133,18 @@ pp metrics
 # ... snip ...
 ```
 
+### Metrics
+
+On some platforms (currently only Linux), additional memory metrics are captured.
+
+#### Proportional Set Size
+
+The total private memory usage + shared memory usage divided by the number of processes sharing said data.
+
+#### Unique Set Size
+
+The total private memory usage.
+
 ## Contributing
 
 1. Fork it

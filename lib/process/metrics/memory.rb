@@ -63,6 +63,9 @@ module Process
 						end
 					end
 					
+					# The unique set size, the size of completely private (unshared) data.
+					usage[:uss] = usage[:private_clean] + usage[:private_dirty]
+					
 					return usage.freeze
 				end
 			else
