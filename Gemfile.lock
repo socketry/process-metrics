@@ -63,10 +63,11 @@ PLATFORMS
   ruby
 
 DEPENDENCIES
+  bundler
   covered
   process-metrics!
   rake (~> 12.0)
-  rspec (~> 3.0)
+  rspec (~> 3.8)
 
 BUNDLED WITH
    2.1.2
