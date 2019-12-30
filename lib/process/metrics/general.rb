@@ -40,17 +40,17 @@ module Process
 			Array(pid).join(",")
 		end
 		
-		def self.capture(pid: nil, ppid: nil, ps: PS, columns: COLUMNS)
+		def self.capture(pid: nil, gid: nil, ps: PS, columns: COLUMNS)
 			input, output = IO.pipe
 			
 			arguments = [ps, "-o", columns.join(',')]
 			
 			if pid
-				arguments.push("--pid", pidlist(pid))
+				arguments.push("-p", pidlist(pid))
 			end
 			
-			if ppid
-				arguments.push("--ppid", pidlist(ppid))
+			if gid
+				arguments.push("-g", pidlist(gid))
 			end
 			
 			system(*arguments, out: output, pgroup: true)
