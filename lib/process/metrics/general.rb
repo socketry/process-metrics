@@ -46,11 +46,11 @@ module Process
 			arguments = [ps, "-o", columns.join(',')]
 			
 			if pid
-				arguments.append("--pid", pidlist(pid))
+				arguments.push("--pid", pidlist(pid))
 			end
 			
 			if ppid
-				arguments.append("--ppid", pidlist(ppid))
+				arguments.push("--ppid", pidlist(ppid))
 			end
 			
 			system(*arguments, out: output, pgroup: true)
