@@ -68,9 +68,9 @@ RSpec.describe Process::Metrics do
 	end
 	
 	describe '.capture' do
-		subject {Process::Metrics.capture(pgid: Process.getpgrp)}
+		subject {Process::Metrics.capture(pid: Process.pid, ppid: Process.pid)}
 		
-		it "can get memory usage for current process group" do
+		it "can get memory usage for parent process" do
 			pid = Process.spawn("sleep 10")
 			
 			sleep 5

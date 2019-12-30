@@ -44,6 +44,7 @@ module Process
 		# command: The name of the process.
 		FIELDS = {
 			pid: ->(value){value.to_i},
+			ppid: ->(value){value.to_i},
 			pgid: ->(value){value.to_i},
 			pcpu: ->(value){value.to_f},
 			time: self.method(:duration),
@@ -57,12 +58,28 @@ module Process
 			Set.new(Array(ids))
 		end
 		
-		def self.capture(pid: nil, pgid: nil, ps: PS, fields: FIELDS)
+		def self.expand_children(children, hierarchy, pids)
+			children.each do |pid|
+				self.expand(pid, hierarchy, pids)
+			end
+		end
+		
+		def self.expand(pid, hierarchy, pids)
+			unless pids.include?(pid)
+				pids << pid
+				
+				if children = hierarchy.fetch(pid, nil)
+					self.expand_children(children, hierarchy, pids)
+				end
+			end
+		end
+		
+		def self.capture(pid: nil, ppid: nil, ps: PS, fields: FIELDS)
 			input, output = IO.pipe
 			
 			arguments = [ps]
 			
-			if pid && pgid.nil?
+			if pid && ppid.nil?
 				arguments.push("-p", Array(pid).join(','))
 			else
 				arguments.push("ax")
@@ -83,12 +100,19 @@ module Process
 					to_h
 			end
 			
-			if pgid
-				pid = set(pid)
-				pgid = set(pgid)
+			if ppid
+				pids = Set.new
+				hierarchy = Hash.new{|h,k| h[k] = []}
+				
+				processes.each do |process|
+					hierarchy[process[:ppid]] << process[:pid]
+				end
+				
+				self.expand_children(Array(pid), hierarchy, pids)
+				self.expand_children(Array(ppid), hierarchy, pids)
 				
 				processes.select! do |process|
-					pgid.include?(process[:pgid]) || pid.include?(process[:pid])
+					pids.include?(process[:pid])
 				end
 			end
 			

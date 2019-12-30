@@ -24,77 +24,69 @@ require 'process/metrics'
 metrics = Process::Metrics.capture(pid: Process.pid)
 
 pp metrics
-# [{:pid=>274305,
-#   :pgid=>274305,
+# [{:pid=>68536,
+#   :ppid=>46295,
+#   :pgid=>68536,
 #   :pcpu=>0.0,
 #   :time=>0,
-#   :vsz=>78808,
-#   :rss=>14324,
-#   :etime=>0,
-#   :command=>"ruby /tmp/028e1ca9-409b-478d-81b0-062f4f947962",
+#   :vsz=>94516,
+#   :rss=>29688,
+#   :etime=>41057,
+#   :command=>
+#    "/home/samuel/.rbenv/versions/2.7.0/bin/ruby /home/samuel/.rbenv/versions/2.7.0/bin/falcon-host ./falcon.rb",
 #   :memory=>
-#    {:total=>78812,
-#     :rss=>14508,
-#     :pss=>9187,
-#     :shared_clean=>5652,
-#     :shared_dirty=>0,
-#     :private_clean=>56,
-#     :private_dirty=>8800,
-#     :referenced=>14508,
-#     :anonymous=>8800,
+#    {:total=>94520,
+#     :rss=>29696,
+#     :pss=>8912,
+#     :shared_clean=>9528,
+#     :shared_dirty=>14588,
+#     :private_clean=>924,
+#     :private_dirty=>4656,
+#     :referenced=>29696,
+#     :anonymous=>19244,
 #     :swap=>0,
 #     :swap_pss=>0,
-#     :maps=>150}}]
-```
-
-### Capturing for specific PGID (Process Group)
-
-```ruby
-#!/usr/bin/env ruby
-
-require 'process/metrics'
-
-metrics = Process::Metrics.capture(pgid: ENV['PGID'].to_i)
-
-pp metrics
-# [{:pid=>68558,
+#     :maps=>294}},
+#  {:pid=>68558,
+#   :ppid=>68536,
 #   :pgid=>68558,
 #   :pcpu=>0.0,
 #   :time=>0,
 #   :vsz=>94516,
 #   :rss=>23612,
-#   :etime=>39064,
+#   :etime=>41057,
 #   :command=>"supervisor",
 #   :memory=>
 #    {:total=>94520,
 #     :rss=>23612,
-#     :pss=>7528,
+#     :pss=>7551,
 #     :shared_clean=>4416,
-#     :shared_dirty=>14492,
+#     :shared_dirty=>14448,
 #     :private_clean=>0,
-#     :private_dirty=>4704,
-#     :referenced=>11140,
+#     :private_dirty=>4748,
+#     :referenced=>11184,
 #     :anonymous=>19196,
 #     :swap=>0,
 #     :swap_pss=>0,
 #     :maps=>294}},
 #  {:pid=>68559,
+#   :ppid=>68536,
 #   :pgid=>68558,
 #   :pcpu=>0.0,
 #   :time=>0,
 #   :vsz=>95000,
 #   :rss=>25136,
-#   :etime=>39064,
+#   :etime=>41057,
 #   :command=>"Falcon Host for hello.localhost",
 #   :memory=>
 #    {:total=>95004,
 #     :rss=>25136,
-#     :pss=>9306,
+#     :pss=>9308,
 #     :shared_clean=>5504,
 #     :shared_dirty=>11784,
 #     :private_clean=>0,
 #     :private_dirty=>7848,
-#     :referenced=>17592,
+#     :referenced=>17596,
 #     :anonymous=>19632,
 #     :swap=>0,
 #     :swap_pss=>0,
