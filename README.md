@@ -14,7 +14,9 @@ To add it to your current project:
 
 Memory is measured in kilobytes and time is measured in seconds.
 
-### Capturing for specific PID
+### Capturing for Specific Process
+
+You can capture the metrics for a single process:
 
 ```ruby
 #!/usr/bin/env ruby
@@ -22,6 +24,43 @@ Memory is measured in kilobytes and time is measured in seconds.
 require 'process/metrics'
 
 metrics = Process::Metrics.capture(pid: Process.pid)
+
+pp metrics
+# [{:pid=>282195,
+#   :ppid=>230572,
+#   :pgid=>282195,
+#   :pcpu=>0.0,
+#   :time=>0,
+#   :vsz=>78800,
+#   :rss=>14360,
+#   :etime=>0,
+#   :command=>"ruby /tmp/6b35f421-4595-45d6-b444-754a50636daf",
+#   :memory=>
+#    {:total=>78804,
+#     :rss=>14600,
+#     :pss=>9208,
+#     :shared_clean=>5728,
+#     :shared_dirty=>0,
+#     :private_clean=>16,
+#     :private_dirty=>8856,
+#     :referenced=>14600,
+#     :anonymous=>8856,
+#     :swap=>0,
+#     :swap_pss=>0,
+#     :maps=>150}}]
+```
+
+### Capturing for Process Hierarchy
+
+You can capture the metrics for a process and all it's children:
+
+```ruby
+#!/usr/bin/env ruby
+
+require 'process/metrics'
+
+ppid = ENV["PPID"].to_i
+metrics = Process::Metrics.capture(pid: ppid, ppid: ppid)
 
 pp metrics
 # [{:pid=>68536,
