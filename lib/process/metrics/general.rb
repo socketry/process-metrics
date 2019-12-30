@@ -87,7 +87,7 @@ module Process
 			
 			arguments.push("-o", fields.keys.join(','))
 			
-			child_pid = Process.spawn(*arguments, out: output, pgroup: true)
+			ps_pid = Process.spawn(*arguments, out: output, pgroup: true)
 			
 			output.close
 			
@@ -105,7 +105,9 @@ module Process
 				hierarchy = Hash.new{|h,k| h[k] = []}
 				
 				processes.each do |process|
-					hierarchy[process[:ppid]] << process[:pid]
+					unless process[:pid] == ps_pid
+						hierarchy[process[:ppid]] << process[:pid]
+					end
 				end
 				
 				self.expand_children(Array(pid), hierarchy, pids)
@@ -126,7 +128,7 @@ module Process
 			
 			return processes
 		ensure
-			Process.wait(child_pid) if child_pid
+			Process.wait(ps_pid) if ps_pid
 		end
 	end
 end

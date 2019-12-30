@@ -70,6 +70,12 @@ RSpec.describe Process::Metrics do
 	describe '.capture' do
 		subject {Process::Metrics.capture(pid: Process.pid, ppid: Process.pid)}
 		
+		it "doesn't include ps command in own output" do
+			command = subject.find{|process| process[:command].include?("ps")}
+			
+			expect(command).to be_nil
+		end
+		
 		it "can get memory usage for parent process" do
 			pid = Process.spawn("sleep 10")
 			
