@@ -58,20 +58,23 @@ RSpec.describe Process::Metrics do
 	end
 	
 	describe '.capture' do
-		subject {Process::Metrics.capture(pid: Process.pid).first}
+		let(:pid) {Process.pid}
+		subject {Process::Metrics::General.capture(pid: pid)}
 		
 		it "can get memory usage for current process" do
-			is_expected.to include(
-				:pid, :pcpu, :vsz, :rss, :etime
-			)
+			is_expected.to include(pid)
+		end
+		
+		it "can generate hash value" do
+			expect(subject[pid].to_h).to include(:pid, :vsz, :rsz, :command)
 		end
 	end
 	
 	describe '.capture' do
-		subject {Process::Metrics.capture(pid: Process.pid, ppid: Process.pid)}
+		subject {Process::Metrics::General.capture(pid: Process.pid, ppid: Process.pid)}
 		
 		it "doesn't include ps command in own output" do
-			command = subject.find{|process| process[:command].include?("ps")}
+			command = subject.each_value.find{|process| process.command.include?("ps")}
 			
 			expect(command).to be_nil
 		end
@@ -79,14 +82,14 @@ RSpec.describe Process::Metrics do
 		it "can get memory usage for parent process" do
 			pid = Process.spawn("sleep 10")
 			
-			sleep 5
+			sleep 1
 			
 			expect(subject.size).to be >= 2
 			
-			command = subject.find{|process| process[:command].include?("sleep")}
+			command = subject.each_value.find{|process| process.command.include?("sleep")}
 			expect(command).to_not be_nil
 			
-			expect(command[:etime]).to be_within(1).of(5)
+			expect(command[:etime]).to be_within(1).of(1)
 			
 			Process.kill(:TERM, pid)
 			Process.wait(pid)

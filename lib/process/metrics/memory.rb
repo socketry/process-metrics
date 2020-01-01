@@ -22,28 +22,40 @@
 
 module Process
 	module Metrics
-		module Memory
+		class Memory < Struct.new(:map_count, :total_size, :resident_size, :proportional_size, :shared_clean_size, :shared_dirty_size, :private_clean_size, :private_dirty_size, :referenced_size, :anonymous_size, :swap_size, :proportional_swap_size)
+			
+			alias as_json to_h
+			
+			def to_json(*arguments)
+				as_json.to_json(*arguments)
+			end
+			
+			# The unique set size, the size of completely private (unshared) data.
+			def unique_size
+				self.private_clean + self.private_dirty
+			end
+			
 			if File.readable?('/proc/self/smaps')
 				def self.supported?
 					true
 				end
 				
 				MAP = {
-					"Size" => :total,
-					"Rss" => :rss,
-					"Pss" => :pss,
-					"Shared_Clean" => :shared_clean,
-					"Shared_Dirty" => :shared_dirty,
-					"Private_Clean" => :private_clean,
-					"Private_Dirty" => :private_dirty,
-					"Referenced" => :referenced,
-					"Anonymous" => :anonymous,
-					"Swap" => :swap,
-					"SwapPss" => :swap_pss,
+					"Size" => :total_size,
+					"Rss" => :resident_size,
+					"Pss" => :proportional_size,
+					"Shared_Clean" => :shared_clean_size,
+					"Shared_Dirty" => :shared_dirty_size,
+					"Private_Clean" => :private_clean_size,
+					"Private_Dirty" => :private_dirty_size,
+					"Referenced" => :referenced_size,
+					"Anonymous" => :anonymous_size,
+					"Swap" => :swap_size,
+					"SwapPss" => :proportional_swap_size,
 				}
 				
 				def self.capture(pids)
-					usage = Hash.new{|h,k| h[k] = 0}
+					usage = self.new(0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0)
 					
 					pids.each do |pid|
 						if lines = File.readlines("/proc/#{pid}/smaps")
@@ -57,16 +69,13 @@ module Process
 								elsif /VmFlags:\s+(?<flags>.*)/ =~ line
 									# It should be possible to extract the number of fibers and each fiber's memory usage.
 									# flags = flags.split(/\s+/)
-									usage[:maps] += 1
+									usage.map_count += 1
 								end
 							end
 						end
 					end
 					
-					# The unique set size, the size of completely private (unshared) data.
-					usage[:uss] = usage[:private_clean] + usage[:private_dirty]
-					
-					return usage.freeze
+					return usage
 				end
 			else
 				def self.supported?
@@ -74,6 +83,7 @@ module Process
 				end
 				
 				def self.capture(pids)
+					return self.new
 				end
 			end
 		end

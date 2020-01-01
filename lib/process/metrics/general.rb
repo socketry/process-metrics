@@ -49,86 +49,123 @@ module Process
 			pcpu: ->(value){value.to_f},
 			time: self.method(:duration),
 			vsz: ->(value){value.to_i},
-			rss: ->(value){value.to_i},
+			rsz: ->(value){value.to_i},
 			etime: self.method(:duration),
 			command: ->(value){value},
 		}
 		
-		def self.set(ids)
-			Set.new(Array(ids))
-		end
-		
-		def self.expand_children(children, hierarchy, pids)
-			children.each do |pid|
-				self.expand(pid, hierarchy, pids)
+		class General < Struct.new(:pid, :ppid, :pgid, :pcpu, :vsz, :rsz, :time, :etime, :command, :memory)
+			def as_json
+				{
+					pid: self.pid,
+					ppid: self.ppid,
+					pgid: self.pgid,
+					pcpu: self.pcpu,
+					vsz: self.vsz,
+					rsz: self.rsz,
+					time: self.time,
+					etime: self.etime,
+					command: self.command,
+					memory: self.memory&.as_json,
+				}
 			end
-		end
-		
-		def self.expand(pid, hierarchy, pids)
-			unless pids.include?(pid)
-				pids << pid
-				
-				if children = hierarchy.fetch(pid, nil)
-					self.expand_children(children, hierarchy, pids)
+			
+			def to_json(*arguments)
+				as_json.to_json(*arguments)
+			end
+			
+			def self.expand_children(children, hierarchy, pids)
+				children.each do |pid|
+					self.expand(pid, hierarchy, pids)
 				end
 			end
-		end
-		
-		def self.capture(pid: nil, ppid: nil, ps: PS, fields: FIELDS)
-			input, output = IO.pipe
 			
-			arguments = [ps]
-			
-			if pid && ppid.nil?
-				arguments.push("-p", Array(pid).join(','))
-			else
-				arguments.push("ax")
+			def self.expand(pid, hierarchy, pids)
+				unless pids.include?(pid)
+					pids << pid
+					
+					if children = hierarchy.fetch(pid, nil)
+						self.expand_children(children, hierarchy, pids)
+					end
+				end
 			end
 			
-			arguments.push("-o", fields.keys.join(','))
-			
-			ps_pid = Process.spawn(*arguments, out: output, pgroup: true)
-			
-			output.close
-			
-			header, *lines = input.readlines.map(&:strip)
-			
-			processes = lines.map do |line|
-				fields.
-					zip(line.split(/\s+/, fields.size)).
-					map{|(key, type), value| [key, type.call(value)]}.
-					to_h
-			end
-			
-			if ppid
-				pids = Set.new
+			def self.build_tree(processes)
 				hierarchy = Hash.new{|h,k| h[k] = []}
 				
-				processes.each do |process|
-					unless process[:pid] == ps_pid
-						hierarchy[process[:ppid]] << process[:pid]
+				processes.each_value do |process|
+					if ppid = process.ppid
+						hierarchy[ppid] << process.pid
 					end
 				end
 				
-				self.expand_children(Array(pid), hierarchy, pids)
-				self.expand_children(Array(ppid), hierarchy, pids)
-				
-				processes.select! do |process|
-					pids.include?(process[:pid])
+				return hierarchy
+			end
+			
+			def self.capture_memory(processes)
+				processes.each do |pid, process|
+					process.memory = Memory.capture(Array(pid))
 				end
 			end
 			
-			if Memory.supported?
-				processes.each do |process|
-					if pid = process[:pid]
-						process[:memory] = Memory.capture(Array(process[:pid]))
+			def self.capture(pid: nil, ppid: nil, ps: PS, fields: FIELDS)
+				input, output = IO.pipe
+				
+				arguments = [ps]
+				
+				if pid && ppid.nil?
+					arguments.push("-p", Array(pid).join(','))
+				else
+					arguments.push("ax")
+				end
+				
+				arguments.push("-o", fields.keys.join(','))
+				
+				ps_pid = Process.spawn(*arguments, out: output, pgroup: true)
+				
+				output.close
+				
+				header, *lines = input.readlines.map(&:strip)
+				
+				processes = {}
+				
+				lines.map do |line|
+					record = fields.
+						zip(line.split(/\s+/, fields.size)).
+						map{|(key, type), value| type.call(value)}
+					
+					instance = self.new(*record)
+					
+					processes[instance.pid] = instance
+				end
+				
+				if ppid
+					pids = Set.new
+					
+					hierarchy = self.build_tree(processes)
+					
+					self.expand_children(Array(pid), hierarchy, pids)
+					self.expand_children(Array(ppid), hierarchy, pids)
+					
+					processes.select! do |pid, process|
+						if pid != ps_pid
+							pids.include?(pid)
+						end
 					end
 				end
+				
+				if Memory.supported?
+					self.capture_memory(processes)
+					
+					# if pid
+					# 	self.compute_summary(pid, processes)
+					# end
+				end
+				
+				return processes
+			ensure
+				Process.wait(ps_pid) if ps_pid
 			end
-			
-			return processes
-		ensure
-			Process.wait(ps_pid) if ps_pid
 		end
 	end
 end
