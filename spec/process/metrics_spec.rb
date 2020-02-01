@@ -66,7 +66,7 @@ RSpec.describe Process::Metrics do
 		end
 		
 		it "can generate hash value" do
-			expect(subject[pid].to_h).to include(:pid, :vsz, :rsz, :command)
+			expect(subject[pid].to_h).to include(:pid, :vsz, :rss, :command)
 		end
 	end
 	

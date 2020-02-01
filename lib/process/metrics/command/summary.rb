@@ -147,12 +147,12 @@ module Process
 								format_memory_usage[memory.unique_size]
 							)
 						else
-							memory_usage += general.rsz
+							memory_usage += general.rss
 							proportional = false
 							
 							terminal.print_line(
 								:key, "Memory (RSS): ".rjust(20), :reset,
-								format_memory_usage[general.rsz]
+								format_memory_usage[general.rss]
 							)
 						end
 					end

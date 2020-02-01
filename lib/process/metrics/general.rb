@@ -49,12 +49,12 @@ module Process
 			pcpu: ->(value){value.to_f},
 			time: self.method(:duration),
 			vsz: ->(value){value.to_i},
-			rsz: ->(value){value.to_i},
+			rss: ->(value){value.to_i},
 			etime: self.method(:duration),
 			command: ->(value){value},
 		}
 		
-		class General < Struct.new(:pid, :ppid, :pgid, :pcpu, :vsz, :rsz, :time, :etime, :command, :memory)
+		class General < Struct.new(:pid, :ppid, :pgid, :pcpu, :vsz, :rss, :time, :etime, :command, :memory)
 			def as_json
 				{
 					pid: self.pid,
@@ -62,7 +62,7 @@ module Process
 					pgid: self.pgid,
 					pcpu: self.pcpu,
 					vsz: self.vsz,
-					rsz: self.rsz,
+					rss: self.rss,
 					time: self.time,
 					etime: self.etime,
 					command: self.command,
@@ -78,7 +78,7 @@ module Process
 				if self.memory
 					self.memory.proportional_size
 				else
-					self.rsz
+					self.rss
 				end
 			end
 			
