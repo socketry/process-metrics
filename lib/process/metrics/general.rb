@@ -74,6 +74,14 @@ module Process
 				as_json.to_json(*arguments)
 			end
 			
+			def memory_usage
+				if self.memory
+					self.memory.proportional_size
+				else
+					self.rsz
+				end
+			end
+			
 			def self.expand_children(children, hierarchy, pids)
 				children.each do |pid|
 					self.expand(pid, hierarchy, pids)

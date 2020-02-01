@@ -32,7 +32,7 @@ module Process
 			
 			# The unique set size, the size of completely private (unshared) data.
 			def unique_size
-				self.private_clean + self.private_dirty
+				self.private_clean_size + self.private_dirty_size
 			end
 			
 			if File.readable?('/proc/self/smaps')
