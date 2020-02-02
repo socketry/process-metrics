@@ -14,6 +14,12 @@ To add it to your current project:
 
 Memory is measured in kilobytes and time is measured in seconds.
 
+### Command Line
+
+You can use the `process-metrics` command line to print data about a running process and it's children:
+
+![Command Line Example](command-line.png)
+
 ### Capturing for Specific Process
 
 You can capture the metrics for a single process:
