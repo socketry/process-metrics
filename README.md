@@ -2,8 +2,6 @@
 
 Extract performance and memory metrics from running processes.
 
-[![Build Status](https://travis-ci.com/socketry/process-metrics.svg)](https://travis-ci.com/socketry/process-metrics)
-
 ## Installation
 
 To add it to your current project:
