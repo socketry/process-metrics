@@ -109,7 +109,9 @@ module Process
 					summary = Process::Metrics::General.capture(pid: @options[:pid], ppid: @options[:ppid])
 					
 					format_memory_usage = self.method(:format_memory_usage).curry
-					memory_usage = 0
+					shared_memory_usage = 0
+					private_memory_usage = 0
+					
 					proportional = true
 					
 					summary.each do |pid, general|
@@ -120,7 +122,8 @@ module Process
 						terminal.print_line
 						
 						if memory = general.memory
-							memory_usage += memory.proportional_size
+							shared_memory_usage += memory.proportional_size
+							private_memory_usage += memory.unique_size
 							
 							terminal.print_line(
 								:key, "Memory (PSS): ".rjust(20), :reset,
@@ -132,7 +135,7 @@ module Process
 								format_memory_usage[memory.unique_size]
 							)
 						else
-							memory_usage += general.rss
+							shared_memory_usage += general.rss
 							proportional = false
 							
 							terminal.print_line(
@@ -147,7 +150,12 @@ module Process
 					if proportional
 						terminal.print_line(
 							:key, "Memory (PSS): ".rjust(20), :reset,
-							format_memory_usage[memory_usage]
+							format_memory_usage[shared_memory_usage]
+						)
+						
+						terminal.print_line(
+							:key, "Memory (USS): ".rjust(20), :reset,
+							format_memory_usage[private_memory_usage]
 						)
 					else
 						terminal.print_line(
@@ -155,6 +163,11 @@ module Process
 							format_memory_usage[memory_usage]
 						)
 					end
+					
+					terminal.print_line(
+						:key, "Memory (Total): ".rjust(20), :reset,
+						format_memory_usage[shared_memory_usage + private_memory_usage]
+					)
 				end
 			end
 		end
