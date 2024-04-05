@@ -32,7 +32,7 @@ module Process
 				"SwapPss" => :proportional_swap_size,
 			}
 			
-			if File.readable?('proc/self/smaps_rollup')
+			if File.readable?('/proc/self/smaps_rollup')
 				def self.supported?
 					true
 				end
