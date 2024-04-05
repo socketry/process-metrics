@@ -26,4 +26,5 @@ Gem::Specification.new do |spec|
 	
 	spec.add_dependency "console", "~> 1.8"
 	spec.add_dependency "samovar", "~> 2.1"
+	spec.add_dependency "json", "~> 2"
 end

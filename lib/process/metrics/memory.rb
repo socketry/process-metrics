@@ -3,6 +3,8 @@
 # Released under the MIT License.
 # Copyright, 2019-2024, by Samuel Williams.
 
+require 'json'
+
 module Process
 	module Metrics
 		class Memory < Struct.new(:map_count, :total_size, :resident_size, :proportional_size, :shared_clean_size, :shared_dirty_size, :private_clean_size, :private_dirty_size, :referenced_size, :anonymous_size, :swap_size, :proportional_swap_size)

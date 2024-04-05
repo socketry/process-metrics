@@ -5,6 +5,7 @@
 
 require_relative 'memory'
 require 'set'
+require 'json'
 
 module Process
 	module Metrics
