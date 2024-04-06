@@ -26,7 +26,6 @@ module Process
 			pgid: ->(value){value.to_i}, # Process Group ID
 			pcpu: ->(value){value.to_f}, # Percentage CPU
 			time: self.method(:duration), # CPU Time
-			sz: ->(value){value.to_i}, # Total Size
 			vsz: ->(value){value.to_i}, #	Virtual Size
 			rss: ->(value){value.to_i}, # Resident Size
 			etime: self.method(:duration), # Elapsed Time
@@ -34,7 +33,7 @@ module Process
 		}
 		
 		# General process information.
-		class General < Struct.new(:process_id, :parent_process_id, :process_group_id, :processor_utilization, :total_size, :virtual_size, :resident_size, :processor_time, :elapsed_time, :command, :memory)
+		class General < Struct.new(:process_id, :parent_process_id, :process_group_id, :processor_utilization, :virtual_size, :resident_size, :processor_time, :elapsed_time, :command, :memory)
 			# Convert the object to a JSON serializable hash.
 			def as_json
 				{
@@ -56,15 +55,17 @@ module Process
 			def to_json(*arguments)
 				as_json.to_json(*arguments)
 			end
-		
+			
 			# The general memory usage of the process using the best available information.
-			def memory_usage
+			def total_size
 				if memory = self.memory
 					memory.proportional_size
 				else
-					self.total_size
+					self.resident_size
 				end
 			end
+			
+			alias memory_usage total_size
 			
 			def self.expand_children(children, hierarchy, pids)
 				children.each do |pid|

@@ -15,7 +15,7 @@ describe Process::Metrics::General do
 		end
 		
 		it "can generate hash value" do
-			expect(capture[pid].to_h).to have_keys(:process_id, :total_size, :virtual_size, :resident_size, :command)
+			expect(capture[pid].to_h).to have_keys(:process_id, :virtual_size, :resident_size, :command)
 		end
 		
 		it "can generate json value" do
