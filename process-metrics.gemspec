@@ -16,7 +16,7 @@ Gem::Specification.new do |spec|
 	spec.homepage = "https://github.com/socketry/process-metrics"
 	
 	spec.metadata = {
-		"documentation_uri" => "https://ioquatix.github.io/process-metrics/",
+		"documentation_uri" => "https://socketry.github.io/process-metrics/",
 		"funding_uri" => "https://github.com/sponsors/ioquatix",
 		"source_code_uri" => "https://github.com/socketry/process-metrics.git",
 	}

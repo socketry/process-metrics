@@ -8,9 +8,9 @@ Extract performance and memory metrics from running processes.
 
 ## Usage
 
-Please see the [project documentation](https://ioquatix.github.io/process-metrics/) for more details.
+Please see the [project documentation](https://socketry.github.io/process-metrics/) for more details.
 
-  - [Getting Started](https://ioquatix.github.io/process-metrics/guides/getting-started/index) - This guide explains how to use the `process-metrics` gem to collect and analyze process metrics including processor and memory utilization.
+  - [Getting Started](https://socketry.github.io/process-metrics/guides/getting-started/index) - This guide explains how to use the `process-metrics` gem to collect and analyze process metrics including processor and memory utilization.
 
 ## Contributing
 
