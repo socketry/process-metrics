@@ -6,13 +6,13 @@ This guide explains how to use the `process-metrics` gem to collect and analyze 
 
 Add the gem to your project:
 
-``` shell
+``` bash
 $ bundle add process-metrics
 ```
 
 Or, if you prefer, install it globally:
 
-``` shell
+``` bash
 $ gem install process-metrics
 ```
 
