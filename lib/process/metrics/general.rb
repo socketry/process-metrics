@@ -18,37 +18,31 @@ module Process
 			end
 		end
 		
-		# pid: Process Identifier
-		# pmem: Percentage Memory used.
-		# pcpu: Percentage Processor used.
-		# time: The process time used (executing on CPU).
-		# vsz: Virtual Size in kilobytes
-		# rss: Resident Set Size in kilobytes
-		# etime: The process elapsed time.
-		# command: The name of the process.
 		FIELDS = {
-			pid: ->(value){value.to_i},
-			ppid: ->(value){value.to_i},
-			pgid: ->(value){value.to_i},
-			pcpu: ->(value){value.to_f},
-			time: self.method(:duration),
-			vsz: ->(value){value.to_i},
-			rss: ->(value){value.to_i},
-			etime: self.method(:duration),
-			command: ->(value){value},
+			pid: ->(value){value.to_i}, # Process ID
+			ppid: ->(value){value.to_i}, # Parent Process ID
+			pgid: ->(value){value.to_i}, # Process Group ID
+			pcpu: ->(value){value.to_f}, # Percentage CPU
+			time: self.method(:duration), # CPU Time
+			sz: ->(value){value.to_i}, # Total Size
+			vsz: ->(value){value.to_i}, #	Virtual Size
+			rss: ->(value){value.to_i}, # Resident Size
+			etime: self.method(:duration), # Elapsed Time
+			command: ->(value){value}, # Command (name of the process)
 		}
 		
-		class General < Struct.new(:pid, :ppid, :pgid, :pcpu, :vsz, :rss, :time, :etime, :command, :memory)
+		class General < Struct.new(:process_id, :parent_process_id, :process_group_id, :processor_utilization, :total_size, :virtual_size, :resident_size, :processor_time, :elapsed_time, :command, :memory)
 			def as_json
 				{
-					pid: self.pid,
-					ppid: self.ppid,
-					pgid: self.pgid,
-					pcpu: self.pcpu,
-					vsz: self.vsz,
-					rss: self.rss,
-					time: self.time,
-					etime: self.etime,
+					process_id: self.process_id,
+					parent_process_id: self.parent_process_id,
+					process_group_id: self.process_group_id,
+					processor_utilization: self.processor_utilization,
+					total_size: self.total_size,
+					virtual_size: self.virtual_size,
+					resident_size: self.resident_size,
+					processor_time: self.processor_time,
+					elapsed_time: self.elapsed_time,
 					command: self.command,
 					memory: self.memory&.as_json,
 				}
@@ -62,7 +56,7 @@ module Process
 				if self.memory
 					self.memory.proportional_size
 				else
-					self.rss
+					self.total_size
 				end
 			end
 			
@@ -86,8 +80,8 @@ module Process
 				hierarchy = Hash.new{|h,k| h[k] = []}
 				
 				processes.each_value do |process|
-					if ppid = process.ppid
-						hierarchy[ppid] << process.pid
+					if parent_process_id = process.parent_process_id
+						hierarchy[parent_process_id] << process.process_id
 					end
 				end
 				
@@ -128,7 +122,7 @@ module Process
 					
 					instance = self.new(*record)
 					
-					processes[instance.pid] = instance
+					processes[instance.process_id] = instance
 				end
 				
 				if ppid

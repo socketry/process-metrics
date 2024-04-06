@@ -7,12 +7,16 @@ require 'json'
 
 module Process
 	module Metrics
-		class Memory < Struct.new(:map_count, :total_size, :resident_size, :proportional_size, :shared_clean_size, :shared_dirty_size, :private_clean_size, :private_dirty_size, :referenced_size, :anonymous_size, :swap_size, :proportional_swap_size)
+		class Memory < Struct.new(:map_count, :resident_size, :proportional_size, :shared_clean_size, :shared_dirty_size, :private_clean_size, :private_dirty_size, :referenced_size, :anonymous_size, :swap_size, :proportional_swap_size)
 			
 			alias as_json to_h
 			
 			def to_json(*arguments)
 				as_json.to_json(*arguments)
+			end
+			
+			def total_size
+				self.resident_size + self.swap_size
 			end
 			
 			# The unique set size, the size of completely private (unshared) data.
@@ -21,7 +25,6 @@ module Process
 			end
 			
 			MAP = {
-				"Size" => :total_size,
 				"Rss" => :resident_size,
 				"Pss" => :proportional_size,
 				"Shared_Clean" => :shared_clean_size,
@@ -40,7 +43,7 @@ module Process
 				end
 				
 				def self.capture(pids)
-					usage = self.new(0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0)
+					usage = self.new(0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0)
 					
 					pids.each do |pid|
 						File.foreach("/proc/#{pid}/smaps_rollup") do |line|
@@ -50,6 +53,8 @@ module Process
 								end
 							end
 						end
+						
+						usage.map_count += File.readlines("/proc/#{pid}/maps").size
 					rescue Errno::ENOENT => error
 						# Ignore.
 					end

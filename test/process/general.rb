@@ -15,14 +15,14 @@ describe Process::Metrics::General do
 		end
 		
 		it "can generate hash value" do
-			expect(capture[pid].to_h).to have_keys(:pid, :vsz, :rss, :command)
+			expect(capture[pid].to_h).to have_keys(:process_id, :total_size, :virtual_size, :resident_size, :command)
 		end
 		
 		it "can generate json value" do
 			json_string = capture[pid].to_json
 			json = JSON.parse(json_string)
 			
-			expect(json).to have_keys("pid", "vsz", "rss", "command")
+			expect(json).to have_keys("process_id", "total_size", "virtual_size", "resident_size", "command")
 		end
 		
 		it "can extract memory usage" do
@@ -58,7 +58,9 @@ describe Process::Metrics::General do
 			command = capture.each_value.find{|process| process.command.include?("sleep")}
 			expect(command).not.to be_nil
 			
-			expect(command[:etime]).to be >= 0.0
+			expect(command[:elapsed_time]).to be >= 0.0
+			expect(command[:processor_time]).to be >= 0.0
+			expect(command[:processor_utilization]).to be >= 0.0
 		end
 	end
 end

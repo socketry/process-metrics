@@ -62,7 +62,7 @@ module Process
 					return terminal
 				end
 				
-				def format_pcpu(value, terminal)
+				def format_processor_utilization(value, terminal)
 					if value > 80.0
 						intensity = :high
 					elsif value > 50.0
@@ -118,7 +118,7 @@ module Process
 						terminal.print_line(:pid, pid, :reset, " ", :command, general[:command])
 						
 						terminal.print(:key, "Processor Usage: ".rjust(20), :reset)
-						format_pcpu(general.pcpu, terminal)
+						format_processor_utilization(general.processor_utilization, terminal)
 						terminal.print_line
 						
 						if memory = general.memory
