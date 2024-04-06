@@ -11,6 +11,7 @@ module Process
 	module Metrics
 		PS = "ps"
 		
+		# Parse a duration string into seconds.
 		# According to the linux manual page specifications.
 		def self.duration(value)
 			if /((?<days>\d\d)\-)?((?<hours>\d\d):)?(?<minutes>\d\d):(?<seconds>\d\d)?/ =~ value
@@ -18,6 +19,7 @@ module Process
 			end
 		end
 		
+		# The fields that will be extracted from the `ps` command.
 		FIELDS = {
 			pid: ->(value){value.to_i}, # Process ID
 			ppid: ->(value){value.to_i}, # Parent Process ID
@@ -31,7 +33,9 @@ module Process
 			command: ->(value){value}, # Command (name of the process)
 		}
 		
+		# General process information.
 		class General < Struct.new(:process_id, :parent_process_id, :process_group_id, :processor_utilization, :total_size, :virtual_size, :resident_size, :processor_time, :elapsed_time, :command, :memory)
+			# Convert the object to a JSON serializable hash.
 			def as_json
 				{
 					process_id: self.process_id,
@@ -48,13 +52,15 @@ module Process
 				}
 			end
 			
+			# Convert the object to a JSON string.
 			def to_json(*arguments)
 				as_json.to_json(*arguments)
 			end
-			
+		
+			# The general memory usage of the process using the best available information.
 			def memory_usage
-				if self.memory
-					self.memory.proportional_size
+				if memory = self.memory
+					memory.proportional_size
 				else
 					self.total_size
 				end
@@ -94,7 +100,11 @@ module Process
 				end
 			end
 			
-			def self.capture(pid: nil, ppid: nil, ps: PS, fields: FIELDS)
+			# Capture process information. If given a `pid`, it will capture the details of that process. If given a `ppid`, it will capture the details of all child processes. Specify both `pid` and `ppid` if you want to capture a process and all its children.
+			#
+			# @parameter pid [Integer] The process ID to capture.
+			# @parameter ppid [Integer] The parent process ID to capture.
+			def self.capture(pid: nil, ppid: nil, ps: PS)
 				input, output = IO.pipe
 				
 				arguments = [ps]
@@ -105,7 +115,7 @@ module Process
 					arguments.push("ax")
 				end
 				
-				arguments.push("-o", fields.keys.join(','))
+				arguments.push("-o", FIELDS.keys.join(','))
 				
 				ps_pid = Process.spawn(*arguments, out: output, pgroup: true)
 				
@@ -116,8 +126,8 @@ module Process
 				processes = {}
 				
 				lines.map do |line|
-					record = fields.
-						zip(line.split(/\s+/, fields.size)).
+					record = FIELDS.
+						zip(line.split(/\s+/, FIELDS.size)).
 						map{|(key, type), value| type.call(value)}
 					
 					instance = self.new(*record)

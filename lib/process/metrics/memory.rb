@@ -11,10 +11,12 @@ module Process
 			
 			alias as_json to_h
 			
+			# Convert the object to a JSON string.
 			def to_json(*arguments)
 				as_json.to_json(*arguments)
 			end
 			
+			# The total size of the process in memory.
 			def total_size
 				self.resident_size + self.swap_size
 			end
@@ -24,6 +26,7 @@ module Process
 				self.private_clean_size + self.private_dirty_size
 			end
 			
+			# The fields that will be extracted from the `smaps` data.
 			MAP = {
 				"Rss" => :resident_size,
 				"Pss" => :proportional_size,
@@ -38,10 +41,12 @@ module Process
 			}
 			
 			if File.readable?('/proc/self/smaps_rollup')
+				# Whether the memory usage can be captured on this system.
 				def self.supported?
 					true
 				end
 				
+				# Capture memory usage for the given process IDs.
 				def self.capture(pids)
 					usage = self.new(0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0)
 					
@@ -62,10 +67,12 @@ module Process
 					return usage
 				end
 			elsif File.readable?('/proc/self/smaps')
+				# Whether the memory usage can be captured on this system.
 				def self.supported?
 					true
 				end
 				
+				# Capture memory usage for the given process IDs.
 				def self.capture(pids)
 					usage = self.new(0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0)
 					
@@ -90,10 +97,12 @@ module Process
 					return usage
 				end
 			else
+				# Whether the memory usage can be captured on this system.
 				def self.supported?
 					false
 				end
 				
+				# Capture memory usage for the given process IDs.
 				def self.capture(pids)
 					return self.new
 				end
