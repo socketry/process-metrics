@@ -1,11 +1,11 @@
 # frozen_string_literal: true
 
 # Released under the MIT License.
-# Copyright, 2019-2024, by Samuel Williams.
+# Copyright, 2019-2025, by Samuel Williams.
 
-require_relative 'memory'
-require 'set'
-require 'json'
+require_relative "memory"
+require "set"
+require "json"
 
 module Process
 	module Metrics
@@ -128,12 +128,12 @@ module Process
 				arguments = [ps]
 				
 				if pid && ppid.nil?
-					arguments.push("-p", Array(pid).join(','))
+					arguments.push("-p", Array(pid).join(","))
 				else
 					arguments.push("ax")
 				end
 				
-				arguments.push("-o", FIELDS.keys.join(','))
+				arguments.push("-o", FIELDS.keys.join(","))
 				
 				ps_pid = Process.spawn(*arguments, out: output, pgroup: true)
 				

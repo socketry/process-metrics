@@ -1,7 +1,7 @@
 # frozen_string_literal: true
 
 # Released under the MIT License.
-# Copyright, 2019-2024, by Samuel Williams.
+# Copyright, 2025, by Samuel Williams.
 
 module Process
 	module Metrics
@@ -39,7 +39,7 @@ module Process
 				usage = Memory.zero
 				
 				pids.each do |pid|
-					IO.popen(["vmmap", pid.to_s], 'r') do |io|
+					IO.popen(["vmmap", pid.to_s], "r") do |io|
 						io.each_line do |line|
 							if match = LINE.match(line)
 								virtual_size = parse_size(match[:virtual_size])
@@ -58,10 +58,10 @@ module Process
 								# COW=copy_on_write PRV=private NUL=empty ALI=aliased 
 								# SHM=shared ZER=zero_filled S/A=shared_alias
 								case match[:sharing_mode]
-								when 'PRV'
+								when "PRV"
 									usage.private_clean_size += resident_size - dirty_size
 									usage.private_dirty_size += dirty_size
-								when 'COW', 'SHM'
+								when "COW", "SHM"
 									usage.shared_clean_size += resident_size - dirty_size
 									usage.shared_dirty_size += dirty_size
 								end
@@ -70,8 +70,8 @@ module Process
 								if match[:region_name] =~ /MALLOC|VM_ALLOCATE|Stack|STACK|anonymous/
 									usage.anonymous_size += resident_size
 								end
-							# else
-							# 	puts "Failed to match line: #{line}"
+								# else
+								# 	puts "Failed to match line: #{line}"
 							end
 						end
 					end

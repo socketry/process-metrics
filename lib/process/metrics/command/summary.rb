@@ -1,13 +1,13 @@
 # frozen_string_literal: true
 
 # Released under the MIT License.
-# Copyright, 2020-2024, by Samuel Williams.
+# Copyright, 2020-2025, by Samuel Williams.
 
-require 'samovar'
+require "samovar"
 
-require_relative '../general'
+require_relative "../general"
 
-require 'console/terminal'
+require "console/terminal"
 
 module Process
 	module Metrics
@@ -42,10 +42,10 @@ module Process
 				self.description = "Display a summary of memory usage statistics."
 				
 				options do
-					option '--pid <integer>', "Report on a single process id.", type: Integer, required: true
-					option '-p/--ppid <integer>', "Report on all children of this process id.", type: Integer, required: true
+					option "--pid <integer>", "Report on a single process id.", type: Integer, required: true
+					option "-p/--ppid <integer>", "Report on all children of this process id.", type: Integer, required: true
 					
-					option '--memory-scale <integer>', "Scale maximum memory usage to the specified amount (MiB).", type: Integer, default: 512
+					option "--memory-scale <integer>", "Scale maximum memory usage to the specified amount (MiB).", type: Integer, default: 512
 				end
 				
 				def terminal
@@ -98,7 +98,7 @@ module Process
 						intensity = :low
 					end
 					
-					formatted = (format_size(value) + ' ').rjust(10)
+					formatted = (format_size(value) + " ").rjust(10)
 					
 					terminal.print(formatted, intensity, "[", Bar.format(value / (1024.0 * scale), 60), "]", :reset)
 				end

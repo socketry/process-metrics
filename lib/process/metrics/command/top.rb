@@ -1,12 +1,12 @@
 # frozen_string_literal: true
 
 # Released under the MIT License.
-# Copyright, 2020-2024, by Samuel Williams.
+# Copyright, 2020-2025, by Samuel Williams.
 
-require 'samovar'
+require "samovar"
 
-require_relative 'summary'
-require_relative '../version'
+require_relative "summary"
+require_relative "../version"
 
 module Process
 	module Metrics
@@ -15,13 +15,13 @@ module Process
 				self.description = "Collect memory usage statistics."
 				
 				options do
-					option '-h/--help', "Print out help information."
-					option '-v/--version', "Print out the application version."
+					option "-h/--help", "Print out help information."
+					option "-v/--version", "Print out the application version."
 				end
 				
 				nested :command, {
-					'summary' => Summary,
-				}, default: 'summary'
+					"summary" => Summary,
+				}, default: "summary"
 				
 				def call
 					if @options[:version]

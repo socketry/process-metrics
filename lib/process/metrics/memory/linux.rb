@@ -1,7 +1,7 @@
 # frozen_string_literal: true
 
 # Released under the MIT License.
-# Copyright, 2019-2024, by Samuel Williams.
+# Copyright, 2025, by Samuel Williams.
 
 module Process
 	module Metrics
@@ -20,7 +20,7 @@ module Process
 				"SwapPss" => :proportional_swap_size,
 			}
 			
-			if File.readable?('/proc/self/smaps_rollup')
+			if File.readable?("/proc/self/smaps_rollup")
 				# Whether the memory usage can be captured on this system.
 				def self.supported?
 					true
@@ -46,7 +46,7 @@ module Process
 					
 					return usage
 				end
-			elsif File.readable?('/proc/self/smaps')
+			elsif File.readable?("/proc/self/smaps")
 				# Whether the memory usage can be captured on this system.
 				def self.supported?
 					true

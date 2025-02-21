@@ -10,8 +10,8 @@ Gem::Specification.new do |spec|
 	spec.authors = ["Samuel Williams", "Adam Daniels"]
 	spec.license = "MIT"
 	
-	spec.cert_chain  = ['release.cert']
-	spec.signing_key = File.expand_path('~/.gem/release.pem')
+	spec.cert_chain  = ["release.cert"]
+	spec.signing_key = File.expand_path("~/.gem/release.pem")
 	
 	spec.homepage = "https://github.com/socketry/process-metrics"
 	
@@ -21,11 +21,13 @@ Gem::Specification.new do |spec|
 		"source_code_uri" => "https://github.com/socketry/process-metrics.git",
 	}
 	
-	spec.files = Dir.glob(['{bin,lib}/**/*', '*.md'], File::FNM_DOTMATCH, base: __dir__)
+	spec.files = Dir.glob(["{bin,lib}/**/*", "*.md"], File::FNM_DOTMATCH, base: __dir__)
 	
 	spec.executables = ["process-metrics"]
 	
+	spec.required_ruby_version = ">= 3.1"
+	
 	spec.add_dependency "console", "~> 1.8"
-	spec.add_dependency "samovar", "~> 2.1"
 	spec.add_dependency "json", "~> 2"
+	spec.add_dependency "samovar", "~> 2.1"
 end

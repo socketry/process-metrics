@@ -1,12 +1,12 @@
 # frozen_string_literal: true
 
 # Released under the MIT License.
-# Copyright, 2019-2024, by Samuel Williams.
+# Copyright, 2024-2025, by Samuel Williams.
 
-require 'process/metrics'
+require "process/metrics"
 
 describe Process::Metrics::General do
-	with '.capture' do
+	with ".capture" do
 		let(:pid) {Process.pid}
 		let(:capture) {Process::Metrics::General.capture(pid: pid)}
 		
@@ -30,7 +30,7 @@ describe Process::Metrics::General do
 		end
 	end
 	
-	with '.capture with parent pid' do
+	with ".capture with parent pid" do
 		def before
 			super
 			
