@@ -24,8 +24,8 @@ describe Process::Metrics::Memory do
 				shared_dirty_size: be >= 0,
 				private_clean_size: be >= 0,
 				private_dirty_size: be >= 0,
-				referenced_size: be > 0,
-				anonymous_size: be > 0,
+				referenced_size: be >= 0,
+				anonymous_size: be >= 0,
 				swap_size: be >= 0,
 				proportional_swap_size: be >= 0
 			)

@@ -68,7 +68,6 @@ The {ruby Process::Metrics::General} struct contains the following fields:
 - `process_group_id` - Process Group ID, the process group ID of the process, which can be shared by multiple processes.
 - `processor_utilization` - Processor Utilization (%), the percentage of CPU time used by the process (over a system-specific duration).
 - `total_size` - Memory Size (KB), the total size of the process's memory space (usually over-estimated as it doesn't take into account shared memory).
-- `virtual_size` - Virtual Memory Size (KB), the total size of the process's virtual memory space.
 - `resident_size` - Resident (Set) Size (KB), the amount of physical memory used by the process.
 - `processor_time` - CPU Time (s), the amount of CPU time used by the process.
 - `elapsed_time` - Elapsed Time (s), the amount of time the process has been running.

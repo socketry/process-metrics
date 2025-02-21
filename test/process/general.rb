@@ -37,7 +37,7 @@ describe Process::Metrics::General do
 			@pid = Process.spawn("sleep 10")
 		end
 		
-		def after
+		def after(error = nil)
 			super
 			
 			Process.kill(:TERM, @pid)

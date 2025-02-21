@@ -11,11 +11,28 @@ module Process
 	module Metrics
 		PS = "ps"
 		
+		DURATION = /\A
+			(?:(?<days>\d+)-)?              # Optional days (e.g., '2-')
+			(?:(?<hours>\d+):)?             # Optional hours (e.g., '1:')
+			(?<minutes>\d{1,2}):            # Minutes (always present, 1 or 2 digits)
+			(?<seconds>\d{2})               # Seconds (exactly 2 digits)
+			(?:\.(?<fraction>\d{1,2}))?     # Optional fraction of a second (e.g., '.27')
+		\z/x
+		
+		
 		# Parse a duration string into seconds.
 		# According to the linux manual page specifications.
 		def self.duration(value)
-			if /((?<days>\d\d)\-)?((?<hours>\d\d):)?(?<minutes>\d\d):(?<seconds>\d\d)?/ =~ value
-				(((days&.to_i || 0) * 24 + (hours&.to_i || 0)) * 60 + (minutes&.to_i || 0)) * 60 + seconds&.to_i
+			if match = DURATION.match(value)
+				days = match[:days].to_i
+				hours = match[:hours].to_i
+				minutes = match[:minutes].to_i
+				seconds = match[:seconds].to_i
+				fraction = match[:fraction].to_i
+				
+				return days * 24 * 60 * 60 + hours * 60 * 60 + minutes * 60 + seconds + fraction / 100.0
+			else
+				return 0.0
 			end
 		end
 		
@@ -25,10 +42,10 @@ module Process
 			ppid: ->(value){value.to_i}, # Parent Process ID
 			pgid: ->(value){value.to_i}, # Process Group ID
 			pcpu: ->(value){value.to_f}, # Percentage CPU
-			time: self.method(:duration), # CPU Time
-			vsz: ->(value){value.to_i}, #	Virtual Size
-			rss: ->(value){value.to_i}, # Resident Size
-			etime: self.method(:duration), # Elapsed Time
+			vsz: ->(value){value.to_i}, # Virtual Size (KiB)
+			rss: ->(value){value.to_i}, # Resident Size (KiB)
+			time: self.method(:duration), # CPU Time (seconds)
+			etime: self.method(:duration), # Elapsed Time (seconds)
 			command: ->(value){value}, # Command (name of the process)
 		}
 		
@@ -56,7 +73,7 @@ module Process
 				as_json.to_json(*arguments)
 			end
 			
-			# The general memory usage of the process using the best available information.
+			# The total size of the process in memory, in kilobytes.
 			def total_size
 				if memory = self.memory
 					memory.proportional_size
@@ -105,7 +122,7 @@ module Process
 			#
 			# @parameter pid [Integer] The process ID to capture.
 			# @parameter ppid [Integer] The parent process ID to capture.
-			def self.capture(pid: nil, ppid: nil, ps: PS)
+			def self.capture(pid: nil, ppid: nil, ps: PS, memory: Memory.supported?)
 				input, output = IO.pipe
 				
 				arguments = [ps]
@@ -130,7 +147,6 @@ module Process
 					record = FIELDS.
 						zip(line.split(/\s+/, FIELDS.size)).
 						map{|(key, type), value| type.call(value)}
-					
 					instance = self.new(*record)
 					
 					processes[instance.process_id] = instance
@@ -151,12 +167,8 @@ module Process
 					end
 				end
 				
-				if Memory.supported?
+				if memory
 					self.capture_memory(processes)
-					
-					# if pid
-					# 	self.compute_summary(pid, processes)
-					# end
 				end
 				
 				return processes
