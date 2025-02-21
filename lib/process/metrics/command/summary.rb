@@ -44,8 +44,6 @@ module Process
 				options do
 					option "--pid <integer>", "Report on a single process id.", type: Integer, required: true
 					option "-p/--ppid <integer>", "Report on all children of this process id.", type: Integer, required: true
-					
-					option "--memory-scale <integer>", "Scale maximum memory usage to the specified amount (MiB).", type: Integer, default: 512
 				end
 				
 				def terminal
@@ -89,10 +87,10 @@ module Process
 					return "#{value.round(unit)}#{units[unit]}"
 				end
 				
-				def format_memory_usage(value, terminal, scale: @options[:memory_scale])
-					if value > (1024.0 * scale * 0.8)
+				def format_memory_usage(value, total, terminal)
+					if value > (total * 0.8)
 						intensity = :high
-					elsif value > (1024.0 * scale * 0.5)
+					elsif value > (total * 0.5)
 						intensity = :medium
 					else
 						intensity = :low
@@ -100,7 +98,7 @@ module Process
 					
 					formatted = (format_size(value) + " ").rjust(10)
 					
-					terminal.print(formatted, intensity, "[", Bar.format(value / (1024.0 * scale), 60), "]", :reset)
+					terminal.print(formatted, intensity, "[", Bar.format(value / total.to_f, 60), "]", :reset)
 				end
 				
 				def call
@@ -111,6 +109,15 @@ module Process
 					format_memory_usage = self.method(:format_memory_usage).curry
 					shared_memory_usage = 0
 					private_memory_usage = 0
+					total_memory_usage = 0
+					
+					summary.each do |pid, general|
+						if memory = general.memory
+							total_memory_usage += memory.proportional_size + memory.unique_size
+						else
+							total_memory_usage += general.resident_size
+						end
+					end
 					
 					proportional = true
 					
@@ -126,21 +133,21 @@ module Process
 							private_memory_usage += memory.unique_size
 							
 							terminal.print_line(
-								:key, "Memory (PSS): ".rjust(20), :reset,
-								format_memory_usage[memory.proportional_size]
+								:key, "Shared Memory: ".rjust(20), :reset,
+								format_memory_usage[memory.proportional_size, total_memory_usage]
 							)
 							
 							terminal.print_line(
-								:key, "Private (USS): ".rjust(20), :reset,
-								format_memory_usage[memory.unique_size]
+								:key, "Private Memory: ".rjust(20), :reset,
+								format_memory_usage[memory.unique_size, total_memory_usage]
 							)
 						else
-							shared_memory_usage += general.rss
+							shared_memory_usage += general.resident_size
 							proportional = false
 							
 							terminal.print_line(
-								:key, "Memory (RSS): ".rjust(20), :reset,
-								format_memory_usage[general.rss]
+								:key, "Memory: ".rjust(20), :reset,
+								format_memory_usage[general.resident_size, total_memory_usage]
 							)
 						end
 					end
@@ -149,24 +156,24 @@ module Process
 					
 					if proportional
 						terminal.print_line(
-							:key, "Memory (PSS): ".rjust(20), :reset,
-							format_memory_usage[shared_memory_usage]
+							:key, "Shared Memory: ".rjust(20), :reset,
+							format_memory_usage[shared_memory_usage, total_memory_usage]
 						)
 						
 						terminal.print_line(
-							:key, "Memory (USS): ".rjust(20), :reset,
-							format_memory_usage[private_memory_usage]
+							:key, "Private Memory: ".rjust(20), :reset,
+							format_memory_usage[private_memory_usage, total_memory_usage]
 						)
 					else
 						terminal.print_line(
-							:key, "Memory (RSS): ".rjust(20), :reset,
-							format_memory_usage[memory_usage]
+							:key, "Memory: ".rjust(20), :reset,
+							format_memory_usage[memory_usage, total_memory_usage]
 						)
 					end
 					
 					terminal.print_line(
 						:key, "Memory (Total): ".rjust(20), :reset,
-						format_memory_usage[shared_memory_usage + private_memory_usage]
+						format_memory_usage[shared_memory_usage + private_memory_usage, total_memory_usage]
 					)
 				end
 			end
