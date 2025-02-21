@@ -36,10 +36,10 @@ module Process
 				end
 			
 				# Capture memory usage for the given process IDs.
-				def self.capture(pids)
+				def self.capture(pid, **options)
 					usage = Memory.zero
 					
-					pids.each do |pid|
+					begin
 						File.foreach("/proc/#{pid}/smaps_rollup") do |line|
 							if /(?<name>.*?):\s+(?<value>\d+) kB/ =~ line
 								if key = SMAP[name]
