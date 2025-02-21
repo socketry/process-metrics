@@ -37,7 +37,7 @@ module Process
 			end
 			
 			# Capture memory usage for the given process IDs.
-			def self.capture(pids)
+			def self.capture(pid, **options)
 				return nil
 			end
 		end

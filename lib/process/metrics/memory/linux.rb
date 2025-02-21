@@ -62,10 +62,10 @@ module Process
 				end
 				
 				# Capture memory usage for the given process IDs.
-				def self.capture(pids)
+				def self.capture(pid, **options)
 					usage = Memory.zero
 					
-					pids.each do |pid|
+					begin
 						File.foreach("/proc/#{pid}/smaps") do |line|
 							# The format of this is fixed according to:
 							# https://github.com/torvalds/linux/blob/351c8a09b00b5c51c8f58b016fffe51f87e2d820/fs/proc/task_mmu.c#L804-L814
@@ -102,8 +102,8 @@ module Process
 					return Memory::Linux.total_size
 				end
 				
-				def capture(pids)
-					return Memory::Linux.capture(pids)
+				def capture(...)
+					return Memory::Linux.capture(...)
 				end
 			end
 		end

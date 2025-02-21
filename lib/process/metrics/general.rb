@@ -113,8 +113,10 @@ module Process
 			end
 			
 			def self.capture_memory(processes)
+				count = processes.size
+				
 				processes.each do |pid, process|
-					process.memory = Memory.capture(Array(pid))
+					process.memory = Memory.capture(pid, count: count)
 				end
 			end
 			
