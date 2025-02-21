@@ -13,6 +13,18 @@ module Process
 				File.executable?(VMMAP)
 			end
 			
+			# @returns [Numeric] Total memory size in kilobytes.
+			def self.total_size
+				# sysctl hw.memsize
+				IO.popen(["sysctl", "hw.memsize"], "r") do |io|
+					io.each_line do |line|
+						if line =~ /hw.memsize: (\d+)/
+							return $1.to_i / 1024
+						end
+					end
+				end
+			end
+			
 			# Parse a size string into kilobytes.
 			def self.parse_size(string)
 				return 0 unless string
@@ -89,6 +101,10 @@ module Process
 			class << Memory
 				def supported?
 					return true
+				end
+				
+				def total_size
+					return Memory::Darwin.total_size
 				end
 				
 				def capture(pids)

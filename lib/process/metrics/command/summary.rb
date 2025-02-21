@@ -109,15 +109,7 @@ module Process
 					format_memory_usage = self.method(:format_memory_usage).curry
 					shared_memory_usage = 0
 					private_memory_usage = 0
-					total_memory_usage = 0
-					
-					summary.each do |pid, general|
-						if memory = general.memory
-							total_memory_usage += memory.proportional_size + memory.unique_size
-						else
-							total_memory_usage += general.resident_size
-						end
-					end
+					total_memory_usage = Process::Metrics::Memory.total_size
 					
 					proportional = true
 					

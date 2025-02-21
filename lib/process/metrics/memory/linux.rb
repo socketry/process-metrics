@@ -6,6 +6,15 @@
 module Process
 	module Metrics
 		class Memory::Linux
+			# @returns [Numeric] Total memory size in kilobytes.
+			def self.total_size
+				File.read("/proc/meminfo").each_line do |line|
+					if /MemTotal:\s+(?<total>\d+) kB/ =~ line
+						return total.to_i
+					end
+				end
+			end
+			
 			# The fields that will be extracted from the `smaps` data.
 			SMAP = {
 				"Rss" => :resident_size,
@@ -87,6 +96,10 @@ module Process
 			class << Memory
 				def supported?
 					return true
+				end
+				
+				def total_size
+					return Memory::Linux.total_size
 				end
 				
 				def capture(pids)

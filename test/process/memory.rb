@@ -6,6 +6,12 @@
 require "process/metrics"
 
 describe Process::Metrics::Memory do
+	with ".total_size" do
+		it "can get the total available memory" do
+			expect(Process::Metrics::Memory.total_size).to be > 0
+		end
+	end
+	
 	with ".capture" do
 		let(:pid) {Process.pid}
 		let(:capture) {Process::Metrics::General.capture(pid: pid)}
