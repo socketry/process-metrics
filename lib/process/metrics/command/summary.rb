@@ -42,8 +42,8 @@ module Process
 				self.description = "Display a summary of memory usage statistics."
 				
 				options do
-					option "--pid <integer>", "Report on a single process id.", type: Integer, required: true
-					option "-p/--ppid <integer>", "Report on all children of this process id.", type: Integer, required: true
+					option "--pid <integer>", "Report on a single process id.", type: Integer
+					option "-p/--ppid <integer>", "Report on all children of this process id.", type: Integer
 					
 					option "--total-memory <integer>", "Set the total memory relative to the usage (MiB).", type: Integer
 				end
@@ -112,6 +112,11 @@ module Process
 				end
 				
 				def call
+					# Validate required arguments: at least one of --pid or --ppid must be provided:
+					unless @options[:pid] || @options[:ppid]
+						raise Samovar::MissingValueError.new(self, "pid or ppid")
+					end
+					
 					terminal = self.terminal
 					
 					summary = Process::Metrics::General.capture(pid: @options[:pid], ppid: @options[:ppid])
