@@ -34,7 +34,7 @@ module Process
 				def self.supported?
 					true
 				end
-			
+				
 				# Capture memory usage for the given process IDs.
 				def self.capture(pid, **options)
 					usage = Memory.zero
