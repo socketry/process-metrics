@@ -16,6 +16,10 @@ Please see the [project documentation](https://socketry.github.io/process-metric
 
 Please see the [project releases](https://socketry.github.io/process-metrics/releases/index) for all releases.
 
+### v0.6.0
+
+  - Add support for major and minor page faults on Linux: `Process::Metrics::Memory#major_faults` and `#minor_faults`. Unfortunately these metrics are not available on Darwin (macOS).
+
 ### v0.5.1
 
   - Fixed Linux memory usage capture to correctly read memory statistics.
