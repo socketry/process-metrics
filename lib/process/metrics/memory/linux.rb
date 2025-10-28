@@ -5,8 +5,11 @@
 
 module Process
 	module Metrics
+		# Linux implementation of memory metrics using `/proc/[pid]/smaps` and `/proc/[pid]/stat`.
 		class Memory::Linux
-			# Extract minor/major page fault counters from /proc/[pid]/stat and assign to usage.
+			# Extract minor/major page fault counters from `/proc/[pid]/stat` and assign to usage.
+			# @parameter pid [Integer] The process ID.
+			# @parameter usage [Memory] The Memory instance to populate with fault counters.
 			def self.capture_faults(pid, usage)
 				begin
 					stat = File.read("/proc/#{pid}/stat")
@@ -116,14 +119,22 @@ module Process
 		
 		if Memory::Linux.supported?
 			class << Memory
+				# Whether memory capture is supported on this platform.
+				# @returns [Boolean] True if /proc/[pid]/smaps or smaps_rollup is readable.
 				def supported?
 					return true
 				end
 				
+				# Get total system memory size.
+				# @returns [Integer] Total memory in kilobytes.
 				def total_size
 					return Memory::Linux.total_size
 				end
 				
+				# Capture memory metrics for a process.
+				# @parameter pid [Integer] The process ID.
+				# @parameter options [Hash] Additional options.
+				# @returns [Memory] A Memory instance with captured metrics.
 				def capture(...)
 					return Memory::Linux.capture(...)
 				end

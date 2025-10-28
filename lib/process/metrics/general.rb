@@ -84,12 +84,20 @@ module Process
 			
 			alias memory_usage total_size
 			
+			# Recursively expand a set of child PIDs into a collection.
+			# @parameter children [Array<Integer>] The list of child process IDs to expand.
+			# @parameter hierarchy [Hash<Integer, Array<Integer>>] The parent-to-children process hierarchy.
+			# @parameter pids [Set<Integer>] The set to populate with process IDs.
 			def self.expand_children(children, hierarchy, pids)
 				children.each do |pid|
 					self.expand(pid, hierarchy, pids)
 				end
 			end
 			
+			# Recursively expand a process and its descendants into a collection.
+			# @parameter pid [Integer] The process ID to expand.
+			# @parameter hierarchy [Hash<Integer, Array<Integer>>] The parent-to-children process hierarchy.
+			# @parameter pids [Set<Integer>] The set to populate with process IDs.
 			def self.expand(pid, hierarchy, pids)
 				unless pids.include?(pid)
 					pids << pid
@@ -100,6 +108,9 @@ module Process
 				end
 			end
 			
+			# Build a parent-to-children process hierarchy from a set of processes.
+			# @parameter processes [Hash<Integer, General>] A hash mapping PIDs to General instances.
+			# @returns [Hash<Integer, Array<Integer>>] A hash mapping each parent PID to an array of child PIDs.
 			def self.build_tree(processes)
 				hierarchy = Hash.new{|h,k| h[k] = []}
 				
@@ -112,6 +123,8 @@ module Process
 				return hierarchy
 			end
 			
+			# Capture detailed memory metrics for each process in the given collection.
+			# @parameter processes [Hash<Integer, General>] A hash mapping PIDs to General instances.
 			def self.capture_memory(processes)
 				count = processes.size
 				

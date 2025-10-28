@@ -12,6 +12,7 @@ require "console/terminal"
 module Process
 	module Metrics
 		module Command
+			# Helper module for rendering horizontal progress bars using Unicode block characters.
 			module Bar
 				BLOCK = [
 					" ",
@@ -25,6 +26,10 @@ module Process
 					"█",
 				]
 				
+				# Format a fractional value as a horizontal bar.
+				# @parameter value [Float] A value between 0.0 and 1.0 representing the fill level.
+				# @parameter width [Integer] The width of the bar in characters.
+				# @returns [String] A string of Unicode block characters representing the filled bar.
 				def self.format(value, width)
 					blocks = width * value
 					full_blocks = blocks.floor
@@ -38,6 +43,7 @@ module Process
 				end
 			end
 			
+			# Command that displays a formatted summary of memory usage statistics for processes.
 			class Summary < Samovar::Command
 				self.description = "Display a summary of memory usage statistics."
 				
@@ -48,6 +54,8 @@ module Process
 					option "--total-memory <integer>", "Set the total memory relative to the usage (MiB).", type: Integer
 				end
 				
+				# Get the configured terminal for styled output.
+				# @returns [Console::Terminal] A terminal object with color/style definitions.
 				def terminal
 					terminal = Console::Terminal.for($stdout)
 					
@@ -62,6 +70,9 @@ module Process
 					return terminal
 				end
 				
+				# Format a processor utilization percentage with color-coded bar.
+				# @parameter value [Float] The CPU utilization percentage (0.0-100.0).
+				# @parameter terminal [Console::Terminal] The terminal to output styled text.
 				def format_processor_utilization(value, terminal)
 					if value > 80.0
 						intensity = :high
@@ -78,6 +89,10 @@ module Process
 				
 				UNITS = ["KiB", "MiB", "GiB"]
 				
+				# Format a memory size value in human-readable units.
+				# @parameter value [Numeric] The size value in kilobytes.
+				# @parameter units [Array(String)] The unit labels to use for scaling.
+				# @returns [String] A formatted string with value and unit (e.g., "512KiB", "1.5MiB").
 				def format_size(value, units: UNITS)
 					unit = 0
 					
@@ -89,6 +104,10 @@ module Process
 					return "#{value.round(unit)}#{units[unit]}"
 				end
 				
+				# Format a memory value with a horizontal bar showing utilization relative to total.
+				# @parameter value [Numeric] The memory value in kilobytes.
+				# @parameter total [Numeric] The total memory available in kilobytes.
+				# @parameter terminal [Console::Terminal] The terminal to output styled text.
 				def format_memory(value, total, terminal)
 					if value > (total * 0.8)
 						intensity = :high
@@ -103,6 +122,8 @@ module Process
 					terminal.print(formatted, intensity, "[", Bar.format(value / total.to_f, 60), "]", :reset)
 				end
 				
+				# Get the total memory to use for percentage calculations.
+				# @returns [Integer] Total memory in kilobytes.
 				def total_memory
 					if total_memory = @options[:total_memory]
 						return total_memory * 1024
@@ -111,6 +132,7 @@ module Process
 					end
 				end
 				
+				# Execute the summary command, capturing and displaying process metrics.
 				def call
 					# Validate required arguments: at least one of --pid or --ppid must be provided:
 					unless @options[:pid] || @options[:ppid]

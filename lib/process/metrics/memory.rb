@@ -27,6 +27,8 @@ module Process
 				self.private_clean_size + self.private_dirty_size
 			end
 			
+			# Create a zero-initialized Memory instance.
+			# @returns [Memory] A new Memory object with all fields set to zero.
 			def self.zero
 				self.new(0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0)
 			end

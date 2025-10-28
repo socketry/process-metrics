@@ -7,7 +7,10 @@ require_relative "command/top"
 
 module Process
 	module Metrics
+		# @namespace
 		module Command
+			# Call the default command (Top).
+			# @parameter arguments [Array] Command-line arguments to pass through.
 			def self.call(*arguments)
 				Top.call(*arguments)
 			end

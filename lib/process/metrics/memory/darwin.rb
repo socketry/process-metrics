@@ -5,6 +5,7 @@
 
 module Process
 	module Metrics
+		# Darwin (macOS) implementation of memory metrics using vmmap.
 		class Memory::Darwin
 			VMMAP = "/usr/bin/vmmap"
 			
@@ -25,7 +26,9 @@ module Process
 				end
 			end
 			
-			# Parse a size string into kilobytes.
+			# Parse a size string from vmmap output into kilobytes.
+			# @parameter string [String | Nil] The size string (e.g., "4K", "1.5M", "2G").
+			# @returns [Integer] The size in kilobytes.
 			def self.parse_size(string)
 				return 0 unless string
 				
@@ -93,14 +96,22 @@ module Process
 		
 		if Memory::Darwin.supported?
 			class << Memory
+				# Whether memory capture is supported on this platform.
+				# @returns [Boolean] True if vmmap is available.
 				def supported?
 					return true
 				end
 				
+				# Get total system memory size.
+				# @returns [Integer] Total memory in kilobytes.
 				def total_size
 					return Memory::Darwin.total_size
 				end
 				
+				# Capture memory metrics for a process.
+				# @parameter pid [Integer] The process ID.
+				# @parameter options [Hash] Additional options (e.g., count for proportional estimates).
+				# @returns [Memory] A Memory instance with captured metrics.
 				def capture(...)
 					return Memory::Darwin.capture(...)
 				end

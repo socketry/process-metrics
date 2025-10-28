@@ -11,6 +11,7 @@ require_relative "../version"
 module Process
 	module Metrics
 		module Command
+			# Top-level command entry point for the process-metrics CLI.
 			class Top < Samovar::Command
 				self.description = "Collect memory usage statistics."
 				
@@ -23,6 +24,7 @@ module Process
 					"summary" => Summary,
 				}, default: "summary"
 				
+				# Execute the top command, dispatching to nested commands.
 				def call
 					if @options[:version]
 						puts "#{self.name} v#{VERSION}"
