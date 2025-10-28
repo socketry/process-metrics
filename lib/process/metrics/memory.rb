@@ -8,7 +8,7 @@ require "json"
 module Process
 	module Metrics
 		# Represents memory usage for a process, sizes are in kilobytes.
-		class Memory < Struct.new(:map_count, :resident_size, :proportional_size, :shared_clean_size, :shared_dirty_size, :private_clean_size, :private_dirty_size, :referenced_size, :anonymous_size, :swap_size, :proportional_swap_size)
+		class Memory < Struct.new(:map_count, :resident_size, :proportional_size, :shared_clean_size, :shared_dirty_size, :private_clean_size, :private_dirty_size, :referenced_size, :anonymous_size, :swap_size, :proportional_swap_size, :minor_faults, :major_faults)
 			
 			alias as_json to_h
 			
@@ -28,7 +28,7 @@ module Process
 			end
 			
 			def self.zero
-				self.new(0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0)
+				self.new(0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0)
 			end
 			
 			# Whether the memory usage can be captured on this system.

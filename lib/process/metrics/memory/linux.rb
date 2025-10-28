@@ -6,6 +6,24 @@
 module Process
 	module Metrics
 		class Memory::Linux
+			# Extract minor/major page fault counters from /proc/[pid]/stat and assign to usage.
+			def self.capture_faults(pid, usage)
+				begin
+					stat = File.read("/proc/#{pid}/stat")
+					# The comm field can contain spaces and parentheses; find the closing ')':
+					rparen_index = stat.rindex(")")
+					return unless rparen_index
+					fields = stat[(rparen_index+2)..-1].split(/\s+/)
+					# proc(5): field 10=minflt, 12=majflt; our fields array is 0-indexed from field 3.
+					usage.minor_faults = fields[10-3].to_i
+					usage.major_faults = fields[12-3].to_i
+				rescue Errno::ENOENT, Errno::EACCES
+					# The process may have exited or permissions are insufficient; ignore.
+				rescue => error
+					# Be robust to unexpected formats; ignore errors silently.
+				end
+			end
+			
 			# @returns [Numeric] Total memory size in kilobytes.
 			def self.total_size
 				File.read("/proc/meminfo").each_line do |line|
@@ -49,6 +67,8 @@ module Process
 						end
 						
 						usage.map_count += File.readlines("/proc/#{pid}/maps").size
+						# Also capture fault counters:
+						self.capture_faults(pid, usage)
 					rescue Errno::ENOENT => error
 						# Ignore.
 					end
@@ -79,6 +99,8 @@ module Process
 								usage.map_count += 1
 							end
 						end
+						# Also capture fault counters:
+						self.capture_faults(pid, usage)
 					rescue Errno::ENOENT => error
 						# Ignore.
 					end

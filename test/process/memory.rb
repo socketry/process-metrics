@@ -33,7 +33,9 @@ describe Process::Metrics::Memory do
 				referenced_size: be >= 0,
 				anonymous_size: be >= 0,
 				swap_size: be >= 0,
-				proportional_swap_size: be >= 0
+				proportional_swap_size: be >= 0,
+				minor_faults: be >= 0,
+				major_faults: be >= 0
 			)
 		end
 		
@@ -46,7 +48,7 @@ describe Process::Metrics::Memory do
 			json = JSON.parse(json_string)
 			
 			expect(json).to have_keys(
-				"map_count", "resident_size", "proportional_size", "shared_clean_size", "shared_dirty_size", "private_clean_size", "private_dirty_size", "referenced_size", "anonymous_size", "swap_size", "proportional_swap_size"
+				"map_count", "resident_size", "proportional_size", "shared_clean_size", "shared_dirty_size", "private_clean_size", "private_dirty_size", "referenced_size", "anonymous_size", "swap_size", "proportional_swap_size", "minor_faults", "major_faults"
 			)
 		end
 	end
