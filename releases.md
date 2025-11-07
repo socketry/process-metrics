@@ -1,5 +1,9 @@
 # Releases
 
+## Unreleased
+
+  - Handle `Errno::ESRCH: No such process @ io_fillbuf - fd:xxx /proc/xxx/smaps_rollup` by ignoring it.
+
 ## v0.6.0
 
   - Add support for major and minor page faults on Linux: `Process::Metrics::Memory#major_faults` and `#minor_faults`. Unfortunately these metrics are not available on Darwin (macOS).

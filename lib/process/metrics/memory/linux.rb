@@ -11,20 +11,16 @@ module Process
 			# @parameter pid [Integer] The process ID.
 			# @parameter usage [Memory] The Memory instance to populate with fault counters.
 			def self.capture_faults(pid, usage)
-				begin
-					stat = File.read("/proc/#{pid}/stat")
-					# The comm field can contain spaces and parentheses; find the closing ')':
-					rparen_index = stat.rindex(")")
-					return unless rparen_index
-					fields = stat[(rparen_index+2)..-1].split(/\s+/)
-					# proc(5): field 10=minflt, 12=majflt; our fields array is 0-indexed from field 3.
-					usage.minor_faults = fields[10-3].to_i
-					usage.major_faults = fields[12-3].to_i
-				rescue Errno::ENOENT, Errno::EACCES
-					# The process may have exited or permissions are insufficient; ignore.
-				rescue => error
-					# Be robust to unexpected formats; ignore errors silently.
-				end
+				stat = File.read("/proc/#{pid}/stat")
+				# The comm field can contain spaces and parentheses; find the closing ')':
+				rparen_index = stat.rindex(")")
+				return unless rparen_index
+				fields = stat[(rparen_index+2)..-1].split(/\s+/)
+				# proc(5): field 10=minflt, 12=majflt; our fields array is 0-indexed from field 3.
+				usage.minor_faults = fields[10-3].to_i
+				usage.major_faults = fields[12-3].to_i
+			rescue
+				# Be robust to unexpected formats; ignore errors silently.
 			end
 			
 			# @returns [Numeric] Total memory size in kilobytes.
@@ -72,8 +68,8 @@ module Process
 						usage.map_count += File.readlines("/proc/#{pid}/maps").size
 						# Also capture fault counters:
 						self.capture_faults(pid, usage)
-					rescue Errno::ENOENT => error
-						# Ignore.
+					rescue Errno::ENOENT, Errno::ESRCH
+						# Ignore, process may have ended.
 					end
 					
 					return usage
@@ -104,8 +100,8 @@ module Process
 						end
 						# Also capture fault counters:
 						self.capture_faults(pid, usage)
-					rescue Errno::ENOENT => error
-						# Ignore.
+					rescue Errno::ENOENT, Errno::ESRCH
+						# Ignore, process may have ended.
 					end
 					
 					return usage
