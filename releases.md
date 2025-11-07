@@ -1,6 +1,6 @@
 # Releases
 
-## Unreleased
+## v0.6.1
 
   - Handle `Errno::ESRCH: No such process @ io_fillbuf - fd:xxx /proc/xxx/smaps_rollup` by ignoring it.
 
