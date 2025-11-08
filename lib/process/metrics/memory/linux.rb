@@ -20,7 +20,7 @@ module Process
 				usage.minor_faults = fields[10-3].to_i
 				usage.major_faults = fields[12-3].to_i
 			rescue
-				# Be robust to unexpected formats; ignore errors silently.
+				# Ignore.
 			end
 			
 			# @returns [Numeric] Total memory size in kilobytes.
@@ -54,10 +54,10 @@ module Process
 				
 				# Capture memory usage for the given process IDs.
 				def self.capture(pid, **options)
-					usage = Memory.zero
-					
-					begin
-						File.foreach("/proc/#{pid}/smaps_rollup") do |line|
+					File.open("/proc/#{pid}/smaps_rollup") do |file|
+						usage = Memory.zero
+						
+						file.each_line do |line|
 							if /(?<name>.*?):\s+(?<value>\d+) kB/ =~ line
 								if key = SMAP[name]
 									usage[key] += value.to_i
@@ -68,11 +68,12 @@ module Process
 						usage.map_count += File.readlines("/proc/#{pid}/maps").size
 						# Also capture fault counters:
 						self.capture_faults(pid, usage)
-					rescue Errno::ENOENT, Errno::ESRCH
-						# Ignore, process may have ended.
+						
+						return usage
 					end
-					
-					return usage
+				rescue Errno::ENOENT, Errno::ESRCH
+					# Process doesn't exist.
+					return nil
 				end
 			elsif File.readable?("/proc/self/smaps")
 				# Whether the memory usage can be captured on this system.
@@ -82,10 +83,10 @@ module Process
 				
 				# Capture memory usage for the given process IDs.
 				def self.capture(pid, **options)
-					usage = Memory.zero
-					
-					begin
-						File.foreach("/proc/#{pid}/smaps") do |line|
+					File.open("/proc/#{pid}/smaps") do |file|
+						usage = Memory.zero
+						
+						file.each_line do |line|
 							# The format of this is fixed according to:
 							# https://github.com/torvalds/linux/blob/351c8a09b00b5c51c8f58b016fffe51f87e2d820/fs/proc/task_mmu.c#L804-L814
 							if /(?<name>.*?):\s+(?<value>\d+) kB/ =~ line
@@ -98,13 +99,15 @@ module Process
 								usage.map_count += 1
 							end
 						end
+						
 						# Also capture fault counters:
 						self.capture_faults(pid, usage)
-					rescue Errno::ENOENT, Errno::ESRCH
-						# Ignore, process may have ended.
+						
+						return usage
 					end
-					
-					return usage
+				rescue Errno::ENOENT, Errno::ESRCH
+					# Process doesn't exist.
+					return nil
 				end
 			else
 				def self.supported?

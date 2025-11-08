@@ -51,18 +51,18 @@ module Process
 			
 			# Capture memory usage for the given process IDs.
 			def self.capture(pid, count: 1, **options)
-				usage = Memory.zero
-				
 				IO.popen(["vmmap", pid.to_s], "r") do |io|
+					usage = Memory.zero
+					
 					io.each_line do |line|
 						if match = LINE.match(line)
+							usage.map_count += 1
+							
 							virtual_size = parse_size(match[:virtual_size])
 							resident_size = parse_size(match[:resident_size])
 							dirty_size = parse_size(match[:dirty_size])
 							swap_size = parse_size(match[:swap_size])
 							
-							# Update counts
-							usage.map_count += 1
 							usage.resident_size += resident_size
 							usage.swap_size += swap_size
 							
@@ -84,13 +84,21 @@ module Process
 							end
 						end
 					end
+					
+					if usage.map_count.zero?
+						# vmap might not fail, but also might not return any data.
+						return nil
+					end
+					
+					# Darwin does not expose proportional memory usage, so we guess based on the number of processes. Yes, this is a terrible hack, but it's the most reasonable thing to do given the constraints:
+					usage.proportional_size = usage.resident_size / count
+					usage.proportional_swap_size = usage.swap_size / count
+					
+					return usage
 				end
-				
-				# Darwin does not expose proportional memory usage, so we guess based on the number of processes. Yes, this is a terrible hack, but it's the most reasonable thing to do given the constraints:
-				usage.proportional_size = usage.resident_size / count
-				usage.proportional_swap_size = usage.swap_size / count
-				
-				return usage
+			rescue Errno::ESRCH
+				# Process doesn't exist.
+				return nil
 			end
 		end
 		
