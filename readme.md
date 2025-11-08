@@ -16,6 +16,10 @@ Please see the [project documentation](https://socketry.github.io/process-metric
 
 Please see the [project releases](https://socketry.github.io/process-metrics/releases/index) for all releases.
 
+### v0.7.0
+
+  - Be more proactive about returning nil if memory capture failed.
+
 ### v0.6.1
 
   - Handle `Errno::ESRCH: No such process @ io_fillbuf - fd:xxx /proc/xxx/smaps_rollup` by ignoring it.
@@ -68,14 +72,6 @@ Please see the [project releases](https://socketry.github.io/process-metrics/rel
   - Removed `Gemfile.lock` from version control.
   - Fixed process metrics to exclude the `ps` command itself from measurements.
   - Fixed documentation formatting issues.
-
-### v0.1.0
-
-  - Initial release with support for process and memory metrics on Linux and Darwin (macOS).
-  - Support for selecting processes based on PID or PPID (process group).
-  - Implementation of memory statistics collection using `/proc` filesystem on Linux.
-  - Better handling of process hierarchies.
-  - Support for older Ruby versions.
 
 ## Contributing
 
