@@ -71,8 +71,8 @@ module Process
 						
 						return usage
 					end
-				rescue Errno::ENOENT, Errno::ESRCH
-					# Process doesn't exist.
+				rescue Errno::ENOENT, Errno::ESRCH, Errno::EACCES
+					# Process doesn't exist or we can't access it.
 					return nil
 				end
 			elsif File.readable?("/proc/self/smaps")
@@ -105,8 +105,8 @@ module Process
 						
 						return usage
 					end
-				rescue Errno::ENOENT, Errno::ESRCH
-					# Process doesn't exist.
+				rescue Errno::ENOENT, Errno::ESRCH, Errno::EACCES
+					# Process doesn't exist or we can't access it.
 					return nil
 				end
 			else
