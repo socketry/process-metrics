@@ -150,7 +150,7 @@ module Process
 				
 				arguments.push("-o", FIELDS.keys.join(","))
 				
-				ps_pid = Process.spawn(*arguments, out: output, pgroup: true)
+				ps_pid = Process.spawn(*arguments, out: output)
 				
 				output.close
 				
@@ -188,7 +188,16 @@ module Process
 				
 				return processes
 			ensure
-				Process.wait(ps_pid) if ps_pid
+				if ps_pid
+					begin
+						# Make sure to kill the ps process if it's still running:
+						Process.kill(:KILL, ps_pid)
+						# Reap the process:
+						Process.wait(ps_pid)
+					rescue => error
+						warn "Failed to cleanup ps process #{ps_pid}:\n#{error.full_message}"
+					end
+				end
 			end
 		end
 	end
