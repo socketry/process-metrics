@@ -137,24 +137,39 @@ module Process
 			#
 			# @parameter pid [Integer] The process ID to capture.
 			# @parameter ppid [Integer] The parent process ID to capture.
-			def self.capture(pid: nil, ppid: nil, ps: PS, memory: Memory.supported?)
-				input, output = IO.pipe
+			def self.capture(pid: nil, ppid: nil, memory: Memory.supported?)
+				ps_pid = nil
 				
-				arguments = [ps]
-				
-				if pid && ppid.nil?
-					arguments.push("-p", Array(pid).join(","))
-				else
-					arguments.push("ax")
+				# Extract the information from the `ps` command:
+				header, *lines = IO.pipe do |input, output|
+					arguments = [PS]
+					
+					if pid && ppid.nil?
+						arguments.push("-p", Array(pid).join(","))
+					else
+						arguments.push("ax")
+					end
+					
+					arguments.push("-o", FIELDS.keys.join(","))
+					
+					ps_pid = Process.spawn(*arguments, out: output)
+					output.close
+					
+					input.readlines.map(&:strip)
+				ensure
+					input.close
+					
+					if ps_pid
+						begin
+							# Make sure to kill the ps process if it's still running:
+							Process.kill(:KILL, ps_pid)
+							# Reap the process:
+							Process.wait(ps_pid)
+						rescue => error
+							warn "Failed to cleanup ps process #{ps_pid}:\n#{error.full_message}"
+						end
+					end
 				end
-				
-				arguments.push("-o", FIELDS.keys.join(","))
-				
-				ps_pid = Process.spawn(*arguments, out: output)
-				
-				output.close
-				
-				header, *lines = input.readlines.map(&:strip)
 				
 				processes = {}
 				
@@ -187,17 +202,6 @@ module Process
 				end
 				
 				return processes
-			ensure
-				if ps_pid
-					begin
-						# Make sure to kill the ps process if it's still running:
-						Process.kill(:KILL, ps_pid)
-						# Reap the process:
-						Process.wait(ps_pid)
-					rescue => error
-						warn "Failed to cleanup ps process #{ps_pid}:\n#{error.full_message}"
-					end
-				end
 			end
 		end
 	end
