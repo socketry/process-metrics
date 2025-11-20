@@ -1,5 +1,8 @@
 # frozen_string_literal: true
 
+# Released under the MIT License.
+# Copyright, 2025, by Samuel Williams.
+
 # A small demo to visualize COW-related minor page fault trends.
 # - Allocates page-sized strings in an array.
 # - Forks a child that mutates one byte of a different string each second.
@@ -12,7 +15,7 @@ PAGES     = Integer(ENV.fetch("PAGES", "128"))      # number of page-sized strin
 DURATION  = Integer(ENV.fetch("DURATION", "30"))    # seconds to run/monitor
 
 # Allocate an array of page-sized mutable strings:
-array = Array.new(PAGES) {"\x00" * PAGE_SIZE}
+array = Array.new(PAGES){"\x00" * PAGE_SIZE}
 
 child_pid = fork do
 	$0 = "cow-child"
