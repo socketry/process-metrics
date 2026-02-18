@@ -16,7 +16,7 @@ Please see the [project documentation](https://socketry.github.io/process-metric
 
 Please see the [project releases](https://socketry.github.io/process-metrics/releases/index) for all releases.
 
-### Unreleased
+### v0.9.0
 
   - `Process::Metrics::Memory.total_size` takes into account cgroup limits.
   - On Linux, capturing faults is optional, controlled by `capture(faults: true/false)`.
