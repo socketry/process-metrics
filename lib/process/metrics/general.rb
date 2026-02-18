@@ -42,8 +42,8 @@ module Process
 			ppid: ->(value){value.to_i}, # Parent Process ID
 			pgid: ->(value){value.to_i}, # Process Group ID
 			pcpu: ->(value){value.to_f}, # Percentage CPU
-			vsz: ->(value){value.to_i}, # Virtual Size (KiB)
-			rss: ->(value){value.to_i}, # Resident Size (KiB)
+			vsz: ->(value){value.to_i * 1024}, # Virtual Size (convert from KiB to bytes)
+			rss: ->(value){value.to_i * 1024}, # Resident Size (convert from KiB to bytes)
 			time: self.method(:duration), # CPU Time (seconds)
 			etime: self.method(:duration), # Elapsed Time (seconds)
 			command: ->(value){value}, # Command (name of the process)
@@ -73,7 +73,7 @@ module Process
 				as_json.to_json(*arguments)
 			end
 			
-			# The total size of the process in memory, in kilobytes.
+			# The total size of the process in memory, in bytes.
 			def total_size
 				if memory = self.memory
 					memory.proportional_size

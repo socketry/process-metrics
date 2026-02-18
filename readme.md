@@ -16,6 +16,12 @@ Please see the [project documentation](https://socketry.github.io/process-metric
 
 Please see the [project releases](https://socketry.github.io/process-metrics/releases/index) for all releases.
 
+### Unreleased
+
+  - `Process::Metrics::Memory.total_size` takes into account cgroup limits.
+  - On Linux, capturing faults is optional, controlled by `capture(faults: true/false)`.
+  - Report all sizes in bytes for consistency.
+
 ### v0.7.0
 
   - Be more proactive about returning nil if memory capture failed.
@@ -66,12 +72,6 @@ Please see the [project releases](https://socketry.github.io/process-metrics/rel
   - Added `process-metrics` command line interface for monitoring processes.
   - Implemented structured data using Ruby structs for better performance and clarity.
   - Added documentation about PSS (Proportional Set Size) and USS (Unique Set Size) metrics.
-
-### v0.1.1
-
-  - Removed `Gemfile.lock` from version control.
-  - Fixed process metrics to exclude the `ps` command itself from measurements.
-  - Fixed documentation formatting issues.
 
 ## Contributing
 

@@ -37,16 +37,16 @@ module Process
 				# Ignore.
 			end
 			
-			# Determine the total memory size in kilobytes. This is the maximum amount of memory that can be used by the current process. If running in a container, this may be limited by the container runtime (e.g. cgroups).
+			# Determine the total memory size in bytes. This is the maximum amount of memory that can be used by the current process. If running in a container, this may be limited by the container runtime (e.g. cgroups).
 			#
-			# @returns [Integer] The total memory size in kilobytes.
+			# @returns [Integer] The total memory size in bytes.
 			def self.total_size
 				# Check for Kubernetes/cgroup memory limit first (cgroups v2):
 				if File.exist?("/sys/fs/cgroup/memory.max")
 					limit = File.read("/sys/fs/cgroup/memory.max").strip
 					# "max" means unlimited, fall through to other methods:
 					if limit != "max"
-						return limit.to_i / 1024
+						return limit.to_i
 					end
 				end
 				
@@ -55,7 +55,7 @@ module Process
 					limit = File.read("/sys/fs/cgroup/memory/memory.limit_in_bytes").strip.to_i
 					# A very large number means unlimited, fall through:
 					if limit > 0 && limit < CGROUP_V1_UNLIMITED_THRESHOLD
-						return limit / 1024
+						return limit
 					end
 				end
 				
@@ -63,7 +63,7 @@ module Process
 				if File.exist?("/proc/meminfo")
 					File.foreach("/proc/meminfo") do |line|
 						if /MemTotal:\s*(?<total>\d+)\s*kB/ =~ line
-							return total.to_i
+							return total.to_i * 1024
 						end
 					end
 				end
@@ -100,7 +100,8 @@ module Process
 						file.each_line do |line|
 							if /(?<name>.*?):\s+(?<value>\d+) kB/ =~ line
 								if key = SMAP[name]
-									usage[key] += value.to_i
+									# Convert from kilobytes to bytes
+									usage[key] += value.to_i * 1024
 								end
 							end
 						end
@@ -136,7 +137,8 @@ module Process
 							# https://github.com/torvalds/linux/blob/351c8a09b00b5c51c8f58b016fffe51f87e2d820/fs/proc/task_mmu.c#L804-L814
 							if /(?<name>.*?):\s+(?<value>\d+) kB/ =~ line
 								if key = SMAP[name]
-									usage[key] += value.to_i
+									# Convert from kilobytes to bytes
+									usage[key] += value.to_i * 1024
 								end
 							elsif /VmFlags:\s+(?<flags>.*)/ =~ line
 								# It should be possible to extract the number of fibers and each fiber's memory usage.
@@ -170,7 +172,7 @@ module Process
 				end
 				
 				# Get total system memory size.
-				# @returns [Integer] Total memory in kilobytes.
+				# @returns [Integer] Total memory in bytes.
 				def total_size
 					return Memory::Linux.total_size
 				end

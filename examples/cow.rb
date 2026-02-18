@@ -52,13 +52,13 @@ DURATION.times do |t|
 	
 	minor = mem.minor_faults.to_i
 	major = mem.major_faults.to_i
-	unique = mem.unique_size.to_i          # kB
+	unique = mem.unique_size.to_i          # bytes
 	
 	delta_minor = last_minor ? (minor - last_minor) : 0
 	delta_major = last_major ? (major - last_major) : 0
 	delta_unique = last_unique ? (unique - last_unique) : 0
 	
-	puts "[%2ds] minor: %d (+%d), major: %d (+%d), unique_kB: %d (+%d)" % [t, minor, delta_minor, major, delta_major, unique, delta_unique]
+	puts "[%2ds] minor: %d (+%d), major: %d (+%d), unique_bytes: %d (+%d)" % [t, minor, delta_minor, major, delta_major, unique, delta_unique]
 	
 	last_minor = minor
 	last_major = major

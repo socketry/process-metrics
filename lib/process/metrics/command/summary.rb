@@ -90,23 +90,28 @@ module Process
 				UNITS = ["KiB", "MiB", "GiB"]
 				
 				# Format a memory size value in human-readable units.
-				# @parameter value [Numeric] The size value in kilobytes.
+				# @parameter value [Numeric] The size value in bytes.
 				# @parameter units [Array(String)] The unit labels to use for scaling.
 				# @returns [String] A formatted string with value and unit (e.g., "512KiB", "1.5MiB").
 				def format_size(value, units: UNITS)
-					unit = 0
+					unit = -1
 					
-					while value > 1024.0 && unit < units.size
+					while value >= 1024.0 && unit < units.size - 1
 						value /= 1024.0
 						unit += 1
 					end
 					
-					return "#{value.round(unit)}#{units[unit]}"
+					if unit < 0
+						# Value is less than 1 KiB, show in bytes
+						return "#{value.round(0)}B"
+					else
+						return "#{value.round(unit)}#{units[unit]}"
+					end
 				end
 				
 				# Format a memory value with a horizontal bar showing utilization relative to total.
-				# @parameter value [Numeric] The memory value in kilobytes.
-				# @parameter total [Numeric] The total memory available in kilobytes.
+				# @parameter value [Numeric] The memory value in bytes.
+				# @parameter total [Numeric] The total memory available in bytes.
 				# @parameter terminal [Console::Terminal] The terminal to output styled text.
 				def format_memory(value, total, terminal)
 					if value > (total * 0.8)
@@ -123,10 +128,11 @@ module Process
 				end
 				
 				# Get the total memory to use for percentage calculations.
-				# @returns [Integer] Total memory in kilobytes.
+				# @returns [Integer] Total memory in bytes.
 				def total_memory
 					if total_memory = @options[:total_memory]
-						return total_memory * 1024
+						# Convert from MiB to bytes
+						return total_memory * 1024 * 1024
 					else
 						return Process::Metrics::Memory.total_size
 					end

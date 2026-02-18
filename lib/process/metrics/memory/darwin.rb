@@ -14,29 +14,29 @@ module Process
 				File.executable?(VMMAP)
 			end
 			
-			# @returns [Numeric] Total memory size in kilobytes.
+			# @returns [Numeric] Total memory size in bytes.
 			def self.total_size
 				# sysctl hw.memsize
 				IO.popen(["sysctl", "hw.memsize"], "r") do |io|
 					io.each_line do |line|
 						if line =~ /hw.memsize: (\d+)/
-							return $1.to_i / 1024
+							return $1.to_i
 						end
 					end
 				end
 			end
 			
-			# Parse a size string from vmmap output into kilobytes.
+			# Parse a size string from vmmap output into bytes.
 			# @parameter string [String | Nil] The size string (e.g., "4K", "1.5M", "2G").
-			# @returns [Integer] The size in kilobytes.
+			# @returns [Integer] The size in bytes.
 			def self.parse_size(string)
 				return 0 unless string
 				
 				case string.strip
-				when /([\d\.]+)K/i then ($1.to_f).round
-				when /([\d\.]+)M/i then ($1.to_f * 1024).round
-				when /([\d\.]+)G/i then ($1.to_f * 1024 * 1024).round
-				else (string.to_f / 1024).ceil
+				when /([\d\.]+)K/i then ($1.to_f * 1024).round
+				when /([\d\.]+)M/i then ($1.to_f * 1024 * 1024).round
+				when /([\d\.]+)G/i then ($1.to_f * 1024 * 1024 * 1024).round
+				else (string.to_f).ceil
 				end
 			end
 			
@@ -111,7 +111,7 @@ module Process
 				end
 				
 				# Get total system memory size.
-				# @returns [Integer] Total memory in kilobytes.
+				# @returns [Integer] Total memory in bytes.
 				def total_size
 					return Memory::Darwin.total_size
 				end

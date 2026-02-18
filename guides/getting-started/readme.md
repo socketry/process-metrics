@@ -67,8 +67,8 @@ The {ruby Process::Metrics::General} struct contains the following fields:
 - `parent_process_id` - Parent Process ID, the process ID of the process that started this process.
 - `process_group_id` - Process Group ID, the process group ID of the process, which can be shared by multiple processes.
 - `processor_utilization` - Processor Utilization (%), the percentage of CPU time used by the process (over a system-specific duration).
-- `total_size` - Memory Size (KB), the total size of the process's memory space (usually over-estimated as it doesn't take into account shared memory).
-- `resident_size` - Resident (Set) Size (KB), the amount of physical memory used by the process.
+- `total_size` - Memory Size (bytes), the total size of the process's memory space (usually over-estimated as it doesn't take into account shared memory).
+- `resident_size` - Resident (Set) Size (bytes), the amount of physical memory used by the process.
 - `processor_time` - CPU Time (s), the amount of CPU time used by the process.
 - `elapsed_time` - Elapsed Time (s), the amount of time the process has been running.
 - `command` - Command Name, the name of the command that started the process.
@@ -76,15 +76,15 @@ The {ruby Process::Metrics::General} struct contains the following fields:
 The {ruby Process::Metrics::Memory} struct contains the following fields:
 
 - `map_count` - Number of Memory Mappings, e.g. number of thread stacks, fiber stacks, shared libraries, memory mapped files, etc.
-- `resident_size` - Resident Memory Size (KB), the amount of physical memory used by the process.
-- `proportional_size` - Proportional Memory Size (KB), the amount of memory that the process is using, taking into account shared memory.
-- `shared_clean_size` - Shared Clean Memory Size (KB), the amount of shared memory that is clean (not modified).
-- `shared_dirty_size` - Shared Dirty Memory Size (KB), the amount of shared memory that is dirty (modified).
-- `private_clean_size` - Private Clean Memory Size (KB), the amount of private memory that is clean (not modified).
-- `private_dirty_size` - Private Dirty Memory Size (KB), the amount of private memory that is dirty (modified).
-- `referenced_size` - Referenced Memory Size (KB), active page-cache that isn't going to be reclaimed any time soon.
-- `anonymous_size` - Anonymous Memory Size (KB), mapped memory that isn't backed by a file.
-- `swap_size` - Swap Memory Size (KB), the amount of memory that has been swapped to disk.
-- `proportional_swap_size` - Proportional Swap Memory Size (KB), the amount of memory that has been swapped to disk, excluding shared memory.
+- `resident_size` - Resident Memory Size (bytes), the amount of physical memory used by the process.
+- `proportional_size` - Proportional Memory Size (bytes), the amount of memory that the process is using, taking into account shared memory.
+- `shared_clean_size` - Shared Clean Memory Size (bytes), the amount of shared memory that is clean (not modified).
+- `shared_dirty_size` - Shared Dirty Memory Size (bytes), the amount of shared memory that is dirty (modified).
+- `private_clean_size` - Private Clean Memory Size (bytes), the amount of private memory that is clean (not modified).
+- `private_dirty_size` - Private Dirty Memory Size (bytes), the amount of private memory that is dirty (modified).
+- `referenced_size` - Referenced Memory Size (bytes), active page-cache that isn't going to be reclaimed any time soon.
+- `anonymous_size` - Anonymous Memory Size (bytes), mapped memory that isn't backed by a file.
+- `swap_size` - Swap Memory Size (bytes), the amount of memory that has been swapped to disk.
+- `proportional_swap_size` - Proportional Swap Memory Size (bytes), the amount of memory that has been swapped to disk, excluding shared memory.
 
 In general, the interpretation of these fields is operating system specific. At best, they provide a rough estimate of the process's memory usage, but you should consult the documentation for your operating system for more details on exactly what each field represents.
