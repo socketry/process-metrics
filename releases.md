@@ -1,5 +1,9 @@
 # Releases
 
+## Unreleased
+
+  - `Process::Metrics::Memory.total_size` takes into account cgroup limits.
+
 ## v0.7.0
 
   - Be more proactive about returning nil if memory capture failed.
