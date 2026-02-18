@@ -32,29 +32,30 @@ Process::Metrics::General.capture(pid: Process.pid)
 # => 
 # {3517456=>
 #   #<struct Process::Metrics::General
-#    pid=3517456,
-#    ppid=3517432,
-#    pgid=3517456,
+#    process_id=3517456,
+#    parent_process_id=3517432,
+#    process_group_id=3517456,
 #    processor_utilization=0.0,
-#    vsz=0,
-#    rss=486892,
-#    time=29928,
-#    etime=2593,
+#    virtual_size=445768278528,
+#    resident_size=20348928,
+#    processor_time=0.05,
+#    elapsed_time=2.0,
 #    command="irb",
 #    memory=
 #     #<struct Process::Metrics::Memory
 #      map_count=193,
-#      total_size=486896,
-#      resident_size=30556,
-#      proportional_size=25672,
-#      shared_clean_size=5008,
+#      resident_size=31289344,
+#      proportional_size=26288128,
+#      shared_clean_size=5128192,
 #      shared_dirty_size=0,
-#      private_clean_size=5180,
-#      private_dirty_size=20368,
-#      referenced_size=30548,
-#      anonymous_size=20376,
+#      private_clean_size=5304320,
+#      private_dirty_size=20856832,
+#      referenced_size=31281152,
+#      anonymous_size=20865024,
 #      swap_size=0,
-#      proportional_swap_size=0>>}
+#      proportional_swap_size=0,
+#      minor_faults=0,
+#      major_faults=0>>}
 ```
 
 If you want to capture a tree of processes, you can specify the `ppid:` option instead.
