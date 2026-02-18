@@ -1,7 +1,7 @@
 # frozen_string_literal: true
 
 # Released under the MIT License.
-# Copyright, 2025, by Samuel Williams.
+# Copyright, 2025-2026, by Samuel Williams.
 
 # A small demo to visualize COW-related minor page fault trends.
 # - Allocates page-sized strings in an array.

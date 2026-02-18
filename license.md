@@ -1,6 +1,6 @@
 # MIT License
 
-Copyright, 2019-2025, by Samuel Williams.  
+Copyright, 2019-2026, by Samuel Williams.  
 Copyright, 2024, by Adam Daniels.  
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
