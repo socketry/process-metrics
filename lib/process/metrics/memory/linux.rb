@@ -90,7 +90,10 @@ module Process
 				end
 				
 				# Capture memory usage for the given process IDs.
-				def self.capture(pid, **options)
+				# @parameter pid [Integer] The process ID.
+				# @parameter faults [Boolean] Whether to capture fault counters (default: true).
+				# @parameter options [Hash] Additional options.
+				def self.capture(pid, faults: true, **options)
 					File.open("/proc/#{pid}/smaps_rollup") do |file|
 						usage = Memory.zero
 						
@@ -103,8 +106,10 @@ module Process
 						end
 						
 						usage.map_count += File.readlines("/proc/#{pid}/maps").size
-						# Also capture fault counters:
-						self.capture_faults(pid, usage)
+						# Also capture fault counters if requested:
+						if faults
+							self.capture_faults(pid, usage)
+						end
 						
 						return usage
 					end
@@ -119,7 +124,10 @@ module Process
 				end
 				
 				# Capture memory usage for the given process IDs.
-				def self.capture(pid, **options)
+				# @parameter pid [Integer] The process ID.
+				# @parameter faults [Boolean] Whether to capture fault counters (default: true).
+				# @parameter options [Hash] Additional options.
+				def self.capture(pid, faults: true, **options)
 					File.open("/proc/#{pid}/smaps") do |file|
 						usage = Memory.zero
 						
@@ -137,8 +145,8 @@ module Process
 							end
 						end
 						
-						# Also capture fault counters:
-						self.capture_faults(pid, usage)
+						# Also capture fault counters if requested:
+						self.capture_faults(pid, usage) if faults
 						
 						return usage
 					end
@@ -169,6 +177,7 @@ module Process
 				
 				# Capture memory metrics for a process.
 				# @parameter pid [Integer] The process ID.
+				# @parameter faults [Boolean] Whether to capture fault counters (default: true).
 				# @parameter options [Hash] Additional options.
 				# @returns [Memory] A Memory instance with captured metrics.
 				def capture(...)

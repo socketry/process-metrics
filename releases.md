@@ -3,6 +3,7 @@
 ## Unreleased
 
   - `Process::Metrics::Memory.total_size` takes into account cgroup limits.
+  - On Linux, capturing faults is optional, controlled by `capture(faults: true/false)`.
 
 ## v0.7.0
 
