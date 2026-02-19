@@ -10,6 +10,12 @@
   - On Linux, capturing faults is optional, controlled by `capture(faults: true/false)`.
   - Report all sizes in bytes for consistency.
 
+## v0.8.0
+
+  - Kill `ps` before waiting to avoid hanging when using the process-status backend.
+  - Ignore `Errno::EACCES` when reading process information.
+  - Cleaner process management for the `ps`-based capture path.
+
 ## v0.7.0
 
   - Be more proactive about returning nil if memory capture failed.
