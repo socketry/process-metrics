@@ -1,6 +1,6 @@
 # Releases
 
-## Unreleased
+## v0.10.1
 
   - Consistent use of `_size` suffix.
 

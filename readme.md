@@ -16,9 +16,13 @@ Please see the [project documentation](https://socketry.github.io/process-metric
 
 Please see the [project releases](https://socketry.github.io/process-metrics/releases/index) for all releases.
 
+### v0.10.1
+
+  - Consistent use of `_size` suffix.
+
 ### v0.10.0
 
-  - **Host::Memory**: New per-host struct `Process::Metrics::Host::Memory` with `total`, `used`, `free`, `swap_total`, `swap_used` (all bytes). Use `Host::Memory.capture` to get a snapshot; `.supported?` indicates platform support.
+  - **Host::Memory**: New per-host struct `Process::Metrics::Host::Memory` with `total_size`, `used_size`, `free_size`, `swap_total_size`, `swap_used_size` (all bytes). Use `Host::Memory.capture` to get a snapshot; `.supported?` indicates platform support.
 
 ### v0.9.0
 
@@ -59,17 +63,6 @@ Please see the [project releases](https://socketry.github.io/process-metrics/rel
   - Fixed command formatting in output display.
   - Modernized codebase to use current Ruby conventions.
   - Improved Darwin (macOS) support with better platform-specific handling.
-
-### v0.3.0
-
-  - Added support for `smaps_rollup` on Linux for more efficient memory statistics collection.
-  - Fixed `smaps_rollup` detection (corrected file path).
-  - Removed `sz` metric (not supported on Darwin).
-  - Expanded test coverage.
-  - Improved documentation with better syntax highlighting and fixed links.
-  - Avoided abbreviations in naming conventions for better code clarity.
-  - Added missing dependencies: `bake-test-external` and `json` gem.
-  - Added summary lines for PSS (Proportional Set Size) and USS (Unique Set Size).
 
 ## Contributing
 
