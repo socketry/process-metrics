@@ -51,14 +51,14 @@ module Process
 					
 					comm = stat[1...rparen]
 					fields = stat[(rparen + 2)..].split(/\s+/)
-					# After comm: state(3), ppid(4), pgrp(5), ... utime(14), stime(15), ... starttime(22), vsz(23), rss(24). 0-based: ppid=1, pgrp=2, utime=11, stime=12, starttime=20, vsz=21, rss=22
+					# After comm: state(3), ppid(4), pgrp(5), ... utime(14), stime(15), ... starttime(22), vsz(23), rss(24). 0-based: ppid=1, pgrp=2, utime=11, stime=12, starttime=19, vsz=20, rss=21.
 					ppid_val = fields[1].to_i
 					pgrp = fields[2].to_i
 					utime = fields[11].to_i
 					stime = fields[12].to_i
-					starttime = fields[20].to_i
-					vsz = fields[21].to_i
-					rss_pages = fields[22].to_i
+					starttime = fields[19].to_i
+					vsz = fields[20].to_i
+					rss_pages = fields[21].to_i
 					
 					# Read /proc/uptime once per capture and reuse for every process (starttime is in jiffies since boot).
 					uptime_jiffies ||= begin
