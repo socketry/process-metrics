@@ -40,25 +40,25 @@ module Process
 				uptime_jiffies = nil
 				
 				processes = {}
-				pids_to_read.each do |p|
-					stat_path = "/proc/#{p}/stat"
+				pids_to_read.each do |pid|
+					stat_path = "/proc/#{pid}/stat"
 					next unless File.readable?(stat_path)
 					
-					stat = File.read(stat_path)
+					stat_content = File.read(stat_path)
 					# comm field can contain spaces and parentheses; find the closing ')' (proc(5)).
-					rparen = stat.rindex(")")
-					next unless rparen
+					closing_paren_index = stat_content.rindex(")")
+					next unless closing_paren_index
 					
-					comm = stat[1...rparen]
-					fields = stat[(rparen + 2)..].split(/\s+/)
+					executable_name = stat_content[1...closing_paren_index]
+					fields = stat_content[(closing_paren_index + 2)..].split(/\s+/)
 					# After comm: state(3), ppid(4), pgrp(5), ... utime(14), stime(15), ... starttime(22), vsz(23), rss(24). 0-based: ppid=1, pgrp=2, utime=11, stime=12, starttime=19, vsz=20, rss=21.
-					ppid_val = fields[1].to_i
-					pgrp = fields[2].to_i
+					parent_process_id = fields[1].to_i
+					process_group_id = fields[2].to_i
 					utime = fields[11].to_i
 					stime = fields[12].to_i
 					starttime = fields[19].to_i
-					vsz = fields[20].to_i
-					rss_pages = fields[21].to_i
+					virtual_size = fields[20].to_i
+					resident_pages = fields[21].to_i
 					
 					# Read /proc/uptime once per capture and reuse for every process (starttime is in jiffies since boot).
 					uptime_jiffies ||= begin
@@ -69,15 +69,15 @@ module Process
 					processor_time = (utime + stime).to_f / CLK_TCK
 					elapsed_time = [(uptime_jiffies - starttime).to_f / CLK_TCK, 0.0].max
 					
-					command = read_command(p, comm)
+					command = read_command(pid, executable_name)
 					
-					processes[p] = General.new(
-						p,
-						ppid_val,
-						pgrp,
+					processes[pid] = General.new(
+						pid,
+						parent_process_id,
+						process_group_id,
 						0.0, # processor_utilization: would need two samples; not available from single stat read
-						vsz,
-						rss_pages * PAGE_SIZE,
+						virtual_size,
+						resident_pages * PAGE_SIZE,
 						processor_time,
 						elapsed_time,
 						command,
@@ -94,7 +94,7 @@ module Process
 					hierarchy = General.build_tree(processes)
 					General.expand_children(Array(pid), hierarchy, pids) if pid
 					General.expand_children(Array(ppid), hierarchy, pids)
-					processes.select!{|p, _| pids.include?(p)}
+					processes.select!{|process_id, _| pids.include?(process_id)}
 				end
 				
 				General.capture_memory(processes) if memory
@@ -102,19 +102,19 @@ module Process
 				processes
 			end
 			
-			# Read command line from /proc/[pid]/cmdline; fall back to comm from stat if empty.
+			# Read command line from /proc/[pid]/cmdline; fall back to executable name from stat if empty.
 			# Use binread because cmdline is NUL-separated and may contain non-UTF-8 bytes; we split on NUL and join for display.
-			def self.read_command(pid, comm_fallback)
+			def self.read_command(pid, command_fallback)
 				path = "/proc/#{pid}/cmdline"
-				return comm_fallback unless File.readable?(path)
+				return command_fallback unless File.readable?(path)
 				
-				raw = File.binread(path)
-				return comm_fallback if raw.empty?
+				cmdline_content = File.binread(path)
+				return command_fallback if cmdline_content.empty?
 				
 				# cmdline is NUL-separated; replace with spaces for display.
-				raw.split("\0").join(" ").strip
+				cmdline_content.split("\0").join(" ").strip
 			rescue Errno::ENOENT, Errno::ESRCH, Errno::EACCES
-				comm_fallback
+				command_fallback
 			end
 		end
 	end
@@ -126,4 +126,6 @@ if Process::Metrics::General::Linux.supported?
 			Process::Metrics::General::Linux.capture(...)
 		end
 	end
+else
+	require_relative "process_status"
 end

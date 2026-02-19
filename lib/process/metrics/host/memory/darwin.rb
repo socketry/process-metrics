@@ -10,18 +10,18 @@ module Process
 			# Uses sysctl (hw.memsize), vm_stat (free + inactive pages), and vm.swapusage for swap.
 			class Memory::Darwin
 				# Parse a size string from vm.swapusage (e.g. "1024.00M", "512.00K") into bytes.
-				# @parameter string [String | Nil] The size string from sysctl vm.swapusage.
-				# @returns [Integer | Nil] Size in bytes, or nil if string is nil/empty.
-				def self.parse_swap_size(string)
-					return nil unless string
+				# @parameter size_string [String | Nil] The size string from sysctl vm.swapusage.
+				# @returns [Integer | Nil] Size in bytes, or nil if size_string is nil/empty.
+				def self.parse_swap_size(size_string)
+					return nil unless size_string
 					
-					string = string.strip
+					size_string = size_string.strip
 					
-					case string
+					case size_string
 					when /([\d.]+)M/i then ($1.to_f * 1024 * 1024).round
 					when /([\d.]+)G/i then ($1.to_f * 1024 * 1024 * 1024).round
 					when /([\d.]+)K/i then ($1.to_f * 1024).round
-					else string.to_f.round
+					else size_string.to_f.round
 					end
 				end
 				

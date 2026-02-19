@@ -25,8 +25,7 @@ module Process
 			
 			# Whether process listing via ps is available on this system.
 			def self.supported?
-				which = ENV["PATH"]&.split(File::PATH_SEPARATOR)&.find{|dir| File.executable?(File.join(dir, PS))}
-				!!which
+				system("which", PS, out: File::NULL, err: File::NULL)
 			end
 			
 			# Capture process information using ps. If given a `pid`, captures that process; if given `ppid`, captures that process and all descendants. Specify both to capture a process and its children.
@@ -35,7 +34,7 @@ module Process
 			# @parameter memory [Boolean] Whether to capture detailed memory metrics (default: Memory.supported?).
 			# @returns [Hash<Integer, General>] Map of PID to General instance.
 			def self.capture(pid: nil, ppid: nil, memory: Memory.supported?)
-				ps_pid = nil
+				spawned_pid = nil
 				
 				header, *lines = IO.pipe do |input, output|
 					arguments = [PS]
@@ -49,7 +48,7 @@ module Process
 					
 					arguments.push("-o", FIELDS.keys.join(","))
 					
-					ps_pid = Process.spawn(*arguments, out: output)
+					spawned_pid = Process.spawn(*arguments, out: output)
 					output.close
 					
 					input.readlines.map(&:strip)
@@ -57,12 +56,12 @@ module Process
 					input.close
 					
 					# Always kill and reap the ps subprocess so we never leave it hanging if the pipe closes early.
-					if ps_pid
+					if spawned_pid
 						begin
-							Process.kill(:KILL, ps_pid)
-							Process.wait(ps_pid)
+							Process.kill(:KILL, spawned_pid)
+							Process.wait(spawned_pid)
 						rescue => error
-							warn "Failed to cleanup ps process #{ps_pid}:\n#{error.full_message}"
+							warn "Failed to cleanup ps process #{spawned_pid}:\n#{error.full_message}"
 						end
 					end
 				end
@@ -86,9 +85,9 @@ module Process
 					hierarchy = General.build_tree(processes)
 					General.expand_children(Array(pid), hierarchy, pids) if pid
 					General.expand_children(Array(ppid), hierarchy, pids)
-					processes.select!{|p, _| p != ps_pid && pids.include?(p)}
+					processes.select!{|process_id, _| process_id != spawned_pid && pids.include?(process_id)}
 				else
-					processes.delete(ps_pid) if ps_pid
+					processes.delete(spawned_pid) if spawned_pid
 				end
 				
 				General.capture_memory(processes) if memory
@@ -99,16 +98,12 @@ module Process
 	end
 end
 
-# Wire General.capture to ProcessStatus only when Linux backend isn't active (so Linux can load both for comparison tests).
-if Process::Metrics::General::ProcessStatus.supported?
-	wire_ps = !RUBY_PLATFORM.include?("linux") ||
-		!defined?(Process::Metrics::General::Linux) ||
-		!Process::Metrics::General::Linux.supported?
-	if wire_ps
-		class << Process::Metrics::General
-			def capture(...)
-				Process::Metrics::General::ProcessStatus.capture(...)
-			end
+# Wire General.capture to this implementation when ProcessStatus is available and the Linux backend is not active (so Linux can load both for comparison tests).
+linux_supported = defined?(Process::Metrics::General::Linux) && Process::Metrics::General::Linux.supported?
+if Process::Metrics::General::ProcessStatus.supported? && !linux_supported
+	class << Process::Metrics::General
+		def capture(...)
+			Process::Metrics::General::ProcessStatus.capture(...)
 		end
 	end
 end
