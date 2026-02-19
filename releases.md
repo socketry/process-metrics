@@ -1,6 +1,6 @@
 # Releases
 
-## Unreleased
+## v0.10.0
 
   - **Host::Memory**: New per-host struct `Process::Metrics::Host::Memory` with `total`, `used`, `free`, `swap_total`, `swap_used` (all bytes). Use `Host::Memory.capture` to get a snapshot; `.supported?` indicates platform support.
 

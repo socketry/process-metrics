@@ -16,11 +16,21 @@ Please see the [project documentation](https://socketry.github.io/process-metric
 
 Please see the [project releases](https://socketry.github.io/process-metrics/releases/index) for all releases.
 
+### v0.10.0
+
+  - **Host::Memory**: New per-host struct `Process::Metrics::Host::Memory` with `total`, `used`, `free`, `swap_total`, `swap_used` (all bytes). Use `Host::Memory.capture` to get a snapshot; `.supported?` indicates platform support.
+
 ### v0.9.0
 
   - `Process::Metrics::Memory.total_size` takes into account cgroup limits.
   - On Linux, capturing faults is optional, controlled by `capture(faults: true/false)`.
   - Report all sizes in bytes for consistency.
+
+### v0.8.0
+
+  - Kill `ps` before waiting to avoid hanging when using the process-status backend.
+  - Ignore `Errno::EACCES` when reading process information.
+  - Cleaner process management for the `ps`-based capture path.
 
 ### v0.7.0
 
@@ -60,18 +70,6 @@ Please see the [project releases](https://socketry.github.io/process-metrics/rel
   - Avoided abbreviations in naming conventions for better code clarity.
   - Added missing dependencies: `bake-test-external` and `json` gem.
   - Added summary lines for PSS (Proportional Set Size) and USS (Unique Set Size).
-
-### v0.2.1
-
-  - Added missing dependency to gemspec.
-  - Added example of command line usage to documentation.
-  - Renamed `rsz` to `rss` (Resident Set Size) for consistency across Darwin and Linux platforms.
-
-### v0.2.0
-
-  - Added `process-metrics` command line interface for monitoring processes.
-  - Implemented structured data using Ruby structs for better performance and clarity.
-  - Added documentation about PSS (Proportional Set Size) and USS (Unique Set Size) metrics.
 
 ## Contributing
 
