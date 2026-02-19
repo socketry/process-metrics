@@ -4,6 +4,7 @@
 # Copyright, 2019-2026, by Samuel Williams.
 
 require "json"
+require_relative "host/memory"
 
 module Process
 	module Metrics
@@ -33,6 +34,12 @@ module Process
 				self.new(0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0)
 			end
 			
+			# Total system/host memory in bytes. Delegates to Host::Memory.capture.
+			# @returns [Integer | Nil]
+			def self.total_size
+				Host::Memory.capture&.total
+			end
+			
 			# Whether the memory usage can be captured on this system.
 			def self.supported?
 				false
@@ -46,5 +53,8 @@ module Process
 	end
 end
 
-require_relative "memory/linux"
-require_relative "memory/darwin"
+if RUBY_PLATFORM.include?("linux")
+	require_relative "memory/linux"
+elsif RUBY_PLATFORM.include?("darwin")
+	require_relative "memory/darwin"
+end

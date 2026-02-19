@@ -7,8 +7,12 @@ require "process/metrics"
 
 describe Process::Metrics::Memory do
 	with ".total_size" do
-		it "can get the total available memory" do
+		it "returns total available memory in bytes" do
 			expect(Process::Metrics::Memory.total_size).to be > 0
+		end
+		
+		it "returns an integer" do
+			expect(Process::Metrics::Memory.total_size).to be_a(Integer)
 		end
 	end
 	

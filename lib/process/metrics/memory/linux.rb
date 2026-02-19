@@ -5,25 +5,12 @@
 
 module Process
 	module Metrics
-		# Linux implementation of memory metrics using `/proc/[pid]/smaps` and `/proc/[pid]/stat`.
+		# Linux implementation of per-process memory metrics using `/proc/[pid]/smaps` or `/proc/[pid]/smaps_rollup`, and `/proc/[pid]/stat` for fault counters.
+		# Prefers smaps_rollup when readable (single summary); otherwise falls back to full smaps and counts maps from /proc/[pid]/maps.
 		class Memory::Linux
-			# Threshold for distinguishing actual memory limits from "unlimited" sentinel values in cgroups v1.
-			# 
-			# In cgroups v1, when memory.limit_in_bytes is set to unlimited (by writing -1),
-			# the kernel stores a very large sentinel value close to 2^63 (approximately 9,223,372,036,854,771,712 bytes).
-			# Since no real system would have 1 exabyte (2^60 bytes) of RAM, any value >= this threshold
-			# indicates an "unlimited" configuration and should be treated as if no limit is set.
-			#
-			# This allows us to distinguish between:
-			# - Actual container memory limits: typically in GB-TB range (< 1 EB)
-			# - Unlimited sentinel values: near 2^63 (>> 1 EB)
-			#
-			# Reference: https://www.kernel.org/doc/Documentation/cgroup-v1/memory.txt
-			CGROUP_V1_UNLIMITED_THRESHOLD = 2**60 # ~1 exabyte
-			
-			# Extract minor/major page fault counters from `/proc/[pid]/stat` and assign to usage.
-			# @parameter pid [Integer] The process ID.
-			# @parameter usage [Memory] The Memory instance to populate with fault counters.
+			# Extract minor and major page fault counters from `/proc/[pid]/stat` (proc(5): fields 10=minflt, 12=majflt) and assign to usage.
+			# @parameter pid [Integer] Process ID.
+			# @parameter usage [Memory] Memory instance to populate with minor_faults and major_faults.
 			def self.capture_faults(pid, usage)
 				stat = File.read("/proc/#{pid}/stat")
 				# The comm field can contain spaces and parentheses; find the closing ')':
@@ -37,39 +24,7 @@ module Process
 				# Ignore.
 			end
 			
-			# Determine the total memory size in bytes. This is the maximum amount of memory that can be used by the current process. If running in a container, this may be limited by the container runtime (e.g. cgroups).
-			#
-			# @returns [Integer] The total memory size in bytes.
-			def self.total_size
-				# Check for Kubernetes/cgroup memory limit first (cgroups v2):
-				if File.exist?("/sys/fs/cgroup/memory.max")
-					limit = File.read("/sys/fs/cgroup/memory.max").strip
-					# "max" means unlimited, fall through to other methods:
-					if limit != "max"
-						return limit.to_i
-					end
-				end
-				
-				# Check for Kubernetes/cgroup memory limit (cgroups v1):
-				if File.exist?("/sys/fs/cgroup/memory/memory.limit_in_bytes")
-					limit = File.read("/sys/fs/cgroup/memory/memory.limit_in_bytes").strip.to_i
-					# A very large number means unlimited, fall through:
-					if limit > 0 && limit < CGROUP_V1_UNLIMITED_THRESHOLD
-						return limit
-					end
-				end
-				
-				# Fall back to Linux system memory detection:
-				if File.exist?("/proc/meminfo")
-					File.foreach("/proc/meminfo") do |line|
-						if /MemTotal:\s*(?<total>\d+)\s*kB/ =~ line
-							return total.to_i * 1024
-						end
-					end
-				end
-			end
-			
-			# The fields that will be extracted from the `smaps` data.
+			# Mapping from smaps/smaps_rollup line names to Memory struct members (values in kB, converted to bytes when parsing).
 			SMAP = {
 				"Rss" => :resident_size,
 				"Pss" => :proportional_size,
@@ -89,24 +44,24 @@ module Process
 					true
 				end
 				
-				# Capture memory usage for the given process IDs.
-				# @parameter pid [Integer] The process ID.
-				# @parameter faults [Boolean] Whether to capture fault counters (default: true).
-				# @parameter options [Hash] Additional options.
+				# Capture memory usage from /proc/[pid]/smaps_rollup and /proc/[pid]/maps. Optionally fill fault counters from /proc/[pid]/stat.
+				# @parameter pid [Integer] Process ID.
+				# @parameter faults [Boolean] Whether to capture minor_faults and major_faults (default: true).
+				# @returns [Memory | Nil]
 				def self.capture(pid, faults: true, **options)
 					File.open("/proc/#{pid}/smaps_rollup") do |file|
 						usage = Memory.zero
-						
 						file.each_line do |line|
 							if /(?<name>.*?):\s+(?<value>\d+) kB/ =~ line
 								if key = SMAP[name]
-									# Convert from kilobytes to bytes
+									# Convert from kilobytes to bytes:
 									usage[key] += value.to_i * 1024
 								end
 							end
 						end
 						
 						usage.map_count += File.readlines("/proc/#{pid}/maps").size
+						
 						# Also capture fault counters if requested:
 						if faults
 							self.capture_faults(pid, usage)
@@ -124,20 +79,19 @@ module Process
 					true
 				end
 				
-				# Capture memory usage for the given process IDs.
-				# @parameter pid [Integer] The process ID.
-				# @parameter faults [Boolean] Whether to capture fault counters (default: true).
-				# @parameter options [Hash] Additional options.
+				# Capture memory usage from /proc/[pid]/smaps (and map count from VmFlags) and /proc/[pid]/maps. Optionally fill fault counters from /proc/[pid]/stat.
+				# @parameter pid [Integer] Process ID.
+				# @parameter faults [Boolean] Whether to capture minor_faults and major_faults (default: true).
+				# @returns [Memory | Nil]
 				def self.capture(pid, faults: true, **options)
 					File.open("/proc/#{pid}/smaps") do |file|
 						usage = Memory.zero
-						
 						file.each_line do |line|
 							# The format of this is fixed according to:
 							# https://github.com/torvalds/linux/blob/351c8a09b00b5c51c8f58b016fffe51f87e2d820/fs/proc/task_mmu.c#L804-L814
 							if /(?<name>.*?):\s+(?<value>\d+) kB/ =~ line
 								if key = SMAP[name]
-									# Convert from kilobytes to bytes
+									# Convert from kilobytes to bytes:
 									usage[key] += value.to_i * 1024
 								end
 							elsif /VmFlags:\s+(?<flags>.*)/ =~ line
@@ -148,7 +102,9 @@ module Process
 						end
 						
 						# Also capture fault counters if requested:
-						self.capture_faults(pid, usage) if faults
+						if faults
+							self.capture_faults(pid, usage)
+						end
 						
 						return usage
 					end
@@ -162,30 +118,25 @@ module Process
 				end
 			end
 		end
+	end
+end
+
+# Wire Memory.capture and Memory.supported? to this implementation when smaps or smaps_rollup is readable.
+if Process::Metrics::Memory::Linux.supported?
+	class << Process::Metrics::Memory
+		# Whether memory capture is supported on this platform.
+		# @returns [Boolean] True if /proc/[pid]/smaps or smaps_rollup is readable.
+		def supported?
+			true
+		end
 		
-		if Memory::Linux.supported?
-			class << Memory
-				# Whether memory capture is supported on this platform.
-				# @returns [Boolean] True if /proc/[pid]/smaps or smaps_rollup is readable.
-				def supported?
-					return true
-				end
-				
-				# Get total system memory size.
-				# @returns [Integer] Total memory in bytes.
-				def total_size
-					return Memory::Linux.total_size
-				end
-				
-				# Capture memory metrics for a process.
-				# @parameter pid [Integer] The process ID.
-				# @parameter faults [Boolean] Whether to capture fault counters (default: true).
-				# @parameter options [Hash] Additional options.
-				# @returns [Memory] A Memory instance with captured metrics.
-				def capture(...)
-					return Memory::Linux.capture(...)
-				end
-			end
+		# Capture memory metrics for a process.
+		# @parameter pid [Integer] The process ID.
+		# @parameter faults [Boolean] Whether to capture fault counters (default: true).
+		# @parameter options [Hash] Additional options.
+		# @returns [Memory | Nil] A Memory instance with captured metrics.
+		def capture(...)
+			Process::Metrics::Memory::Linux.capture(...)
 		end
 	end
 end

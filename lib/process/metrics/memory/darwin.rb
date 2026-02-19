@@ -5,7 +5,8 @@
 
 module Process
 	module Metrics
-		# Darwin (macOS) implementation of memory metrics using vmmap.
+		# Darwin (macOS) implementation of per-process memory metrics using vmmap(1).
+		# Parses vmmap output for virtual/resident/dirty/swap per region and maps sharing mode (PRV, COW, SHM) to private/shared fields.
 		class Memory::Darwin
 			VMMAP = "/usr/bin/vmmap"
 			
@@ -14,21 +15,9 @@ module Process
 				File.executable?(VMMAP)
 			end
 			
-			# @returns [Numeric] Total memory size in bytes.
-			def self.total_size
-				# sysctl hw.memsize
-				IO.popen(["sysctl", "hw.memsize"], "r") do |io|
-					io.each_line do |line|
-						if line =~ /hw.memsize: (\d+)/
-							return $1.to_i
-						end
-					end
-				end
-			end
-			
-			# Parse a size string from vmmap output into bytes.
-			# @parameter string [String | Nil] The size string (e.g., "4K", "1.5M", "2G").
-			# @returns [Integer] The size in bytes.
+			# Parse a size string from vmmap (e.g. "4K", "1.5M", "2G") into bytes.
+			# @parameter string [String | Nil]
+			# @returns [Integer]
 			def self.parse_size(string)
 				return 0 unless string
 				
@@ -40,6 +29,7 @@ module Process
 				end
 			end
 			
+			# Regex for vmmap region lines: region name, address range, [virtual resident dirty swap], permissions, SM=sharing_mode.
 			LINE = /\A
 				\s*
 				(?<region_name>.+?)\s+
@@ -49,26 +39,24 @@ module Process
 				SM=(?<sharing_mode>\w+)
 			/x
 			
-			# Capture memory usage for the given process IDs.
+			# Capture memory usage by running vmmap for the given pid and summing region sizes. Proportional size is estimated as resident_size / count (Darwin has no PSS).
+			# @parameter pid [Integer] Process ID.
+			# @parameter count [Integer] Number of processes for proportional estimate (default: 1).
+			# @returns [Memory | Nil]
 			def self.capture(pid, count: 1, **options)
 				IO.popen(["vmmap", pid.to_s], "r") do |io|
 					usage = Memory.zero
-					
 					io.each_line do |line|
 						if match = LINE.match(line)
 							usage.map_count += 1
-							
 							virtual_size = parse_size(match[:virtual_size])
 							resident_size = parse_size(match[:resident_size])
 							dirty_size = parse_size(match[:dirty_size])
 							swap_size = parse_size(match[:swap_size])
-							
 							usage.resident_size += resident_size
 							usage.swap_size += swap_size
 							
-							# Private vs. Shared memory
-							# COW=copy_on_write PRV=private NUL=empty ALI=aliased 
-							# SHM=shared ZER=zero_filled S/A=shared_alias
+							# Private vs. Shared memory: COW=copy_on_write PRV=private NUL=empty ALI=aliased SHM=shared ZER=zero_filled S/A=shared_alias
 							case match[:sharing_mode]
 							when "PRV"
 								usage.private_clean_size += resident_size - dirty_size
@@ -85,10 +73,8 @@ module Process
 						end
 					end
 					
-					if usage.map_count.zero?
-						# vmap might not fail, but also might not return any data.
-						return nil
-					end
+					# vmmap might not fail, but also might not return any data.
+					return nil if usage.map_count.zero?
 					
 					# Darwin does not expose proportional memory usage, so we guess based on the number of processes. Yes, this is a terrible hack, but it's the most reasonable thing to do given the constraints:
 					usage.proportional_size = usage.resident_size / count
@@ -101,29 +87,24 @@ module Process
 				return nil
 			end
 		end
+	end
+end
+
+# Wire Memory.capture and Memory.supported? to this implementation when vmmap is executable.
+if Process::Metrics::Memory::Darwin.supported?
+	class << Process::Metrics::Memory
+		# Whether memory capture is supported on this platform.
+		# @returns [Boolean] True if vmmap is available.
+		def supported?
+			true
+		end
 		
-		if Memory::Darwin.supported?
-			class << Memory
-				# Whether memory capture is supported on this platform.
-				# @returns [Boolean] True if vmmap is available.
-				def supported?
-					return true
-				end
-				
-				# Get total system memory size.
-				# @returns [Integer] Total memory in bytes.
-				def total_size
-					return Memory::Darwin.total_size
-				end
-				
-				# Capture memory metrics for a process.
-				# @parameter pid [Integer] The process ID.
-				# @parameter options [Hash] Additional options (e.g., count for proportional estimates).
-				# @returns [Memory] A Memory instance with captured metrics.
-				def capture(...)
-					return Memory::Darwin.capture(...)
-				end
-			end
+		# Capture memory metrics for a process.
+		# @parameter pid [Integer] The process ID.
+		# @parameter options [Hash] Additional options (e.g. count for proportional estimates).
+		# @returns [Memory | Nil] A Memory instance with captured metrics.
+		def capture(...)
+			Process::Metrics::Memory::Darwin.capture(...)
 		end
 	end
 end
