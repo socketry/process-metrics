@@ -8,12 +8,12 @@ module Process
 		# Per-host (system-wide) memory metrics. Use Host::Memory for total/used/free and swap; use Process::Metrics::Memory for per-process metrics.
 		module Host
 			# Struct for host memory snapshot. All sizes in bytes.
-			# @attribute total [Integer] Total memory (cgroup limit when in a container, else physical RAM).
-			# @attribute used [Integer] Memory in use (total - free).
-			# @attribute free [Integer] Available memory (MemAvailable-style: free + reclaimable).
-			# @attribute swap_total [Integer, nil] Total swap, or nil if not available.
-			# @attribute swap_used [Integer, nil] Swap in use, or nil if not available.
-			Memory = Struct.new(:total, :used, :free, :swap_total, :swap_used) do
+			# @attribute total_size [Integer] Total memory (cgroup limit when in a container, else physical RAM).
+			# @attribute used_size [Integer] Memory in use (total_size - free_size).
+			# @attribute free_size [Integer] Available memory (MemAvailable-style: free + reclaimable).
+			# @attribute swap_total_size [Integer, nil] Total swap, or nil if not available.
+			# @attribute swap_used_size [Integer, nil] Swap in use, or nil if not available.
+			Memory = Struct.new(:total_size, :used_size, :free_size, :swap_total_size, :swap_used_size) do
 				alias as_json to_h
 				
 				def to_json(*arguments)

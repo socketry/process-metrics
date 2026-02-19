@@ -7,25 +7,25 @@ require "process/metrics"
 
 describe Process::Metrics::Host::Memory do
 	with ".capture" do
-		it "returns a struct with total, used, free when supported" do
+		it "returns a struct with total_size, used_size, free_size when supported" do
 			host = Process::Metrics::Host::Memory.capture
 			skip "Host::Memory is not available on this platform" unless host
 			expect(host).to be_a(Process::Metrics::Host::Memory)
-			expect(host.total).to be_a(Integer)
-			expect(host.total).to be > 0
-			expect(host.used).to be_a(Integer)
-			expect(host.used).to be >= 0
-			expect(host.free).to be_a(Integer)
-			expect(host.free).to be >= 0
-			expect(host.used + host.free).to be == host.total
+			expect(host.total_size).to be_a(Integer)
+			expect(host.total_size).to be > 0
+			expect(host.used_size).to be_a(Integer)
+			expect(host.used_size).to be >= 0
+			expect(host.free_size).to be_a(Integer)
+			expect(host.free_size).to be >= 0
+			expect(host.used_size + host.free_size).to be == host.total_size
 		end
 		
-		it "may include swap_total and swap_used" do
+		it "may include swap_total_size and swap_used_size" do
 			host = Process::Metrics::Host::Memory.capture
 			skip "Host::Memory is not available on this platform" unless host
-			if host.swap_total
-				expect(host.swap_total).to be_a(Integer)
-				expect(host.swap_used).to be_a(Integer) if host.swap_used
+			if host.swap_total_size
+				expect(host.swap_total_size).to be_a(Integer)
+				expect(host.swap_used_size).to be_a(Integer) if host.swap_used_size
 			end
 		end
 		
@@ -34,7 +34,7 @@ describe Process::Metrics::Host::Memory do
 			skip "Host::Memory is not available on this platform" unless host
 			json = host.to_json
 			parsed = JSON.parse(json)
-			expect(parsed).to have_keys("total", "used", "free")
+			expect(parsed).to have_keys("total_size", "used_size", "free_size")
 		end
 	end
 	

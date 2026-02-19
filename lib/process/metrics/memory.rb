@@ -37,7 +37,7 @@ module Process
 			# Total system/host memory in bytes. Delegates to Host::Memory.capture.
 			# @returns [Integer | Nil]
 			def self.total_size
-				Host::Memory.capture&.total
+				Host::Memory.capture&.total_size
 			end
 			
 			# Whether the memory usage can be captured on this system.
