@@ -16,16 +16,16 @@ module Process
 			end
 			
 			# Parse a size string from vmmap (e.g. "4K", "1.5M", "2G") into bytes.
-			# @parameter string [String | Nil]
+			# @parameter size_string [String | Nil]
 			# @returns [Integer]
-			def self.parse_size(string)
-				return 0 unless string
+			def self.parse_size(size_string)
+				return 0 unless size_string
 				
-				case string.strip
+				case size_string.strip
 				when /([\d\.]+)K/i then ($1.to_f * 1024).round
 				when /([\d\.]+)M/i then ($1.to_f * 1024 * 1024).round
 				when /([\d\.]+)G/i then ($1.to_f * 1024 * 1024 * 1024).round
-				else (string.to_f).ceil
+				else (size_string.to_f).ceil
 				end
 			end
 			

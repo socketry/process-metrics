@@ -9,8 +9,6 @@ require "json"
 
 module Process
 	module Metrics
-		PS = "ps"
-		
 		DURATION = /\A
 			(?:(?<days>\d+)-)?              # Optional days (e.g., '2-')
 			(?:(?<hours>\d+):)?             # Optional hours (e.g., '1:')
@@ -35,19 +33,6 @@ module Process
 				return 0.0
 			end
 		end
-		
-		# The fields that will be extracted from the `ps` command.
-		FIELDS = {
-			pid: ->(value){value.to_i}, # Process ID
-			ppid: ->(value){value.to_i}, # Parent Process ID
-			pgid: ->(value){value.to_i}, # Process Group ID
-			pcpu: ->(value){value.to_f}, # Percentage CPU
-			vsz: ->(value){value.to_i * 1024}, # Virtual Size (convert from KiB to bytes)
-			rss: ->(value){value.to_i * 1024}, # Resident Size (convert from KiB to bytes)
-			time: self.method(:duration), # CPU Time (seconds)
-			etime: self.method(:duration), # Elapsed Time (seconds)
-			command: ->(value){value}, # Command (name of the process)
-		}
 		
 		# General process information.
 		class General < Struct.new(:process_id, :parent_process_id, :process_group_id, :processor_utilization, :virtual_size, :resident_size, :processor_time, :elapsed_time, :command, :memory)
@@ -132,77 +117,13 @@ module Process
 					process.memory = Memory.capture(pid, count: count)
 				end
 			end
-			
-			# Capture process information. If given a `pid`, it will capture the details of that process. If given a `ppid`, it will capture the details of all child processes. Specify both `pid` and `ppid` if you want to capture a process and all its children.
-			#
-			# @parameter pid [Integer] The process ID to capture.
-			# @parameter ppid [Integer] The parent process ID to capture.
-			def self.capture(pid: nil, ppid: nil, memory: Memory.supported?)
-				ps_pid = nil
-				
-				# Extract the information from the `ps` command:
-				header, *lines = IO.pipe do |input, output|
-					arguments = [PS]
-					
-					if pid && ppid.nil?
-						arguments.push("-p", Array(pid).join(","))
-					else
-						arguments.push("ax")
-					end
-					
-					arguments.push("-o", FIELDS.keys.join(","))
-					
-					ps_pid = Process.spawn(*arguments, out: output)
-					output.close
-					
-					input.readlines.map(&:strip)
-				ensure
-					input.close
-					
-					if ps_pid
-						begin
-							# Make sure to kill the ps process if it's still running:
-							Process.kill(:KILL, ps_pid)
-							# Reap the process:
-							Process.wait(ps_pid)
-						rescue => error
-							warn "Failed to cleanup ps process #{ps_pid}:\n#{error.full_message}"
-						end
-					end
-				end
-				
-				processes = {}
-				
-				lines.map do |line|
-					record = FIELDS.
-						zip(line.split(/\s+/, FIELDS.size)).
-						map{|(key, type), value| type.call(value)}
-					instance = self.new(*record)
-					
-					processes[instance.process_id] = instance
-				end
-				
-				if ppid
-					pids = Set.new
-					
-					hierarchy = self.build_tree(processes)
-					
-					self.expand_children(Array(pid), hierarchy, pids)
-					self.expand_children(Array(ppid), hierarchy, pids)
-					
-					processes.select! do |pid, process|
-						if pid != ps_pid
-							pids.include?(pid)
-						end
-					end
-				end
-				
-				if memory
-					self.capture_memory(processes)
-				end
-				
-				return processes
-			end
 		end
 	end
+end
+
+# One backend provides General.capture: Linux uses /proc (no subprocess); other platforms use ps.
+if RUBY_PLATFORM.include?("linux")
+	require_relative "general/linux"
+else
+	require_relative "general/process_status"
 end

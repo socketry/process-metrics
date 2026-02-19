@@ -12,11 +12,11 @@ module Process
 			# @parameter pid [Integer] Process ID.
 			# @parameter usage [Memory] Memory instance to populate with minor_faults and major_faults.
 			def self.capture_faults(pid, usage)
-				stat = File.read("/proc/#{pid}/stat")
+				stat_content = File.read("/proc/#{pid}/stat")
 				# The comm field can contain spaces and parentheses; find the closing ')':
-				rparen_index = stat.rindex(")")
-				return unless rparen_index
-				fields = stat[(rparen_index+2)..-1].split(/\s+/)
+				closing_paren_index = stat_content.rindex(")")
+				return unless closing_paren_index
+				fields = stat_content[(closing_paren_index + 2)..].split(/\s+/)
 				# proc(5): field 10=minflt, 12=majflt; our fields array is 0-indexed from field 3.
 				usage.minor_faults = fields[10-3].to_i
 				usage.major_faults = fields[12-3].to_i

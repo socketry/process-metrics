@@ -61,11 +61,11 @@ module Process
 						return limit if limit > 0 && limit < CGROUP_V1_UNLIMITED_THRESHOLD
 					end
 					
-					unless meminfo = self.meminfo
-						return nil 
+					unless meminfo_content = self.meminfo
+						return nil
 					end
 					
-					meminfo.each_line do |line|
+					meminfo_content.each_line do |line|
 						if /MemTotal:\s*(?<total>\d+)\s*kB/ =~ line
 							return $~[:total].to_i * 1024
 						end
@@ -90,28 +90,28 @@ module Process
 						end
 					end
 					
-					unless meminfo = self.meminfo
-						return nil 
+					unless meminfo_content = self.meminfo
+						return nil
 					end
 					
-					available_kb = meminfo[/MemAvailable:\s*(\d+)\s*kB/, 1]&.to_i
-					available_kb ||= meminfo[/MemFree:\s*(\d+)\s*kB/, 1]&.to_i
-					return nil unless available_kb
+					available_kilobytes = meminfo_content[/MemAvailable:\s*(\d+)\s*kB/, 1]&.to_i
+					available_kilobytes ||= meminfo_content[/MemFree:\s*(\d+)\s*kB/, 1]&.to_i
+					return nil unless available_kilobytes
 					
-					return [total - (available_kb * 1024), 0].max
+					return [total - (available_kilobytes * 1024), 0].max
 				end
 				
 				# Swap total and used in bytes from meminfo (SwapTotal, SwapFree).
 				# @returns [Array(Integer, Integer)] [swap_total_bytes, swap_used_bytes], or [nil, nil] if no swap.
 				def capture_swap
-					return [nil, nil] unless meminfo
-					swap_total_kb = meminfo[/SwapTotal:\s*(\d+)\s*kB/, 1]&.to_i
-					swap_free_kb = meminfo[/SwapFree:\s*(\d+)\s*kB/, 1]&.to_i
+					return [nil, nil] unless meminfo_content = self.meminfo
+					swap_total_kilobytes = meminfo_content[/SwapTotal:\s*(\d+)\s*kB/, 1]&.to_i
+					swap_free_kilobytes = meminfo_content[/SwapFree:\s*(\d+)\s*kB/, 1]&.to_i
 					
-					return [nil, nil] unless swap_total_kb
+					return [nil, nil] unless swap_total_kilobytes
 					
-					swap_total_bytes = swap_total_kb * 1024
-					swap_used_bytes = (swap_total_kb - (swap_free_kb || 0)) * 1024
+					swap_total_bytes = swap_total_kilobytes * 1024
+					swap_used_bytes = (swap_total_kilobytes - (swap_free_kilobytes || 0)) * 1024
 					
 					return swap_total_bytes, swap_used_bytes
 				end
