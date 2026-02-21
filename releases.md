@@ -1,8 +1,8 @@
 # Releases
 
-## Unreleased
+## v0.10.2
 
-  - Add `Process::Metrics::Memory#private_size` for the sum of private (unshared) pages (Private_Clean + Private_Dirty); `#unique_size` is now an alias for `#private_size`.
+  - Add `Process::Metrics::Memory#private_size` for the sum of private (unshared) pages (Private\_Clean + Private\_Dirty); `#unique_size` is now an alias for `#private_size`.
 
 ## v0.10.1
 

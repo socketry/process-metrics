@@ -16,6 +16,10 @@ Please see the [project documentation](https://socketry.github.io/process-metric
 
 Please see the [project releases](https://socketry.github.io/process-metrics/releases/index) for all releases.
 
+### v0.10.2
+
+  - Add `Process::Metrics::Memory#private_size` for the sum of private (unshared) pages (Private\_Clean + Private\_Dirty); `#unique_size` is now an alias for `#private_size`.
+
 ### v0.10.1
 
   - Consistent use of `_size` suffix.
@@ -57,12 +61,6 @@ Please see the [project releases](https://socketry.github.io/process-metrics/rel
   - Added `--total-memory` option for scaling memory usage graphs, allowing users to set custom total memory values.
   - Improved support for proportional memory usage (PSS).
   - Exposed total system memory information.
-
-### v0.4.0
-
-  - Fixed command formatting in output display.
-  - Modernized codebase to use current Ruby conventions.
-  - Improved Darwin (macOS) support with better platform-specific handling.
 
 ## Contributing
 
