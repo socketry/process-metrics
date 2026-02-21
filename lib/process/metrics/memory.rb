@@ -23,9 +23,28 @@ module Process
 				self.resident_size + self.swap_size
 			end
 			
-			# The unique set size, the size of completely private (unshared) data.
-			def unique_size
+			# The private set size, the size of completely private (unshared) data.
+			# This is the sum of Private_Clean and Private_Dirty pages.
+			# @returns [Integer] Total private memory in bytes.
+			def private_size
 				self.private_clean_size + self.private_dirty_size
+			end
+			
+			# The private set size is also known as the unique set size.
+			alias unique_size private_size
+			
+			# The total size of shared (potentially shared with other processes) memory.
+			# This is the sum of Shared_Clean and Shared_Dirty pages.
+			#
+			# When tracking Copy-on-Write (CoW) activity in forked processes:
+			# - Initially, most memory is shared between parent and child.
+			# - As the child writes to memory, CoW triggers and shared pages become private.
+			# - Tracking shared_size decrease vs unique_size increase can indicate CoW activity.
+			# - If shared_size decreases by X and unique_size increases by ~X, it's likely CoW.
+			#
+			# @returns [Integer] Total shared memory in bytes.
+			def shared_size
+				self.shared_clean_size + self.shared_dirty_size
 			end
 			
 			# Create a zero-initialized Memory instance.

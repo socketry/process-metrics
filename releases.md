@@ -1,5 +1,9 @@
 # Releases
 
+## Unreleased
+
+  - Add `Process::Metrics::Memory#private_size` for the sum of private (unshared) pages (Private_Clean + Private_Dirty); `#unique_size` is now an alias for `#private_size`.
+
 ## v0.10.1
 
   - Consistent use of `_size` suffix.

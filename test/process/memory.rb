@@ -55,5 +55,20 @@ describe Process::Metrics::Memory do
 				"map_count", "resident_size", "proportional_size", "shared_clean_size", "shared_dirty_size", "private_clean_size", "private_dirty_size", "referenced_size", "anonymous_size", "swap_size", "proportional_swap_size", "minor_faults", "major_faults"
 			)
 		end
+		
+		it "can calculate shared_size and unique_size" do
+			unless memory = capture[pid].memory
+				skip "Detailed memory information is not available on this platform!"
+			end
+			
+			shared_size = memory.shared_size
+			unique_size = memory.unique_size
+			
+			expect(shared_size).to be >= 0
+			expect(unique_size).to be >= 0
+			expect(shared_size).to be == (memory.shared_clean_size + memory.shared_dirty_size)
+			expect(unique_size).to be == (memory.private_clean_size + memory.private_dirty_size)
+			expect(memory.private_size).to be == unique_size
+		end
 	end
 end
