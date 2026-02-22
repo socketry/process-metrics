@@ -38,7 +38,7 @@ module Process
 					used = [total - free, 0].max
 					swap_total, swap_used = capture_swap
 					
-					return Host::Memory.new(total, used, free, swap_total, swap_used)
+					return Host::Memory.new(total, used, swap_total, swap_used, nil)
 				end
 				
 				# Total physical RAM in bytes, from sysctl hw.memsize.
