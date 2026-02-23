@@ -4,7 +4,7 @@
 # Copyright, 2019-2026, by Samuel Williams.
 
 require "json"
-require_relative "host/memory"
+require_relative "host"
 
 module Process
 	module Metrics

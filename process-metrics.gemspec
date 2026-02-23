@@ -23,11 +23,8 @@ Gem::Specification.new do |spec|
 	
 	spec.files = Dir.glob(["{bin,context,lib}/**/*", "*.md"], File::FNM_DOTMATCH, base: __dir__)
 	
-	spec.executables = ["process-metrics"]
-	
 	spec.required_ruby_version = ">= 3.2"
 	
 	spec.add_dependency "console", "~> 1.8"
 	spec.add_dependency "json", "~> 2"
-	spec.add_dependency "samovar", "~> 2.1"
 end

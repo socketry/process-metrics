@@ -1,5 +1,9 @@
 # Releases
 
+## Unreleased
+
+  - `process-metrics` command is removed, replaced with `bake process:metrics`.
+
 ## v0.10.2
 
   - Add `Process::Metrics::Memory#private_size` for the sum of private (unshared) pages (Private\_Clean + Private\_Dirty); `#unique_size` is now an alias for `#private_size`.
