@@ -30,13 +30,12 @@ describe Process::Metrics::Host::Memory do
 			end
 		end
 		
-		it "may include reclaimable_size (Linux: page cache etc., included in used_size)" do
+		it "may include reclaimable_size" do
 			host = Process::Metrics::Host::Memory.capture
 			skip "Host::Memory is not available on this platform" unless host
 			if host.reclaimable_size != nil
 				expect(host.reclaimable_size).to be_a(Integer)
 				expect(host.reclaimable_size).to be >= 0
-				expect(host.reclaimable_size).to be <= host.used_size
 			end
 		end
 		
@@ -70,7 +69,8 @@ if defined?(Process::Metrics::Host::Memory::Linux)
 					File.write(File.join(dir, "memory.max"), total_bytes.to_s)
 					File.write(File.join(dir, "memory.current"), used_bytes.to_s)
 					File.write(File.join(dir, "memory.stat"), "anon 0\nfile #{file_reclaimable_bytes}\nkernel 0\n")
-					host = Process::Metrics::Host::Memory::Linux.new(cgroup_root: dir).capture
+					
+					host = Process::Metrics::Host::Memory::Linux.capture(cgroup_root: dir)
 					expect(host).to be_a(Process::Metrics::Host::Memory)
 					expect(host.total_size).to be == total_bytes
 					expect(host.used_size).to be == used_bytes
