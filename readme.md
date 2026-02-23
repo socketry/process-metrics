@@ -16,6 +16,10 @@ Please see the [project documentation](https://socketry.github.io/process-metric
 
 Please see the [project releases](https://socketry.github.io/process-metrics/releases/index) for all releases.
 
+### v0.11.0
+
+  - `process-metrics` command is removed, replaced with `bake process:metrics`.
+
 ### v0.10.2
 
   - Add `Process::Metrics::Memory#private_size` for the sum of private (unshared) pages (Private\_Clean + Private\_Dirty); `#unique_size` is now an alias for `#private_size`.
@@ -55,12 +59,6 @@ Please see the [project releases](https://socketry.github.io/process-metrics/rel
 ### v0.5.1
 
   - Fixed Linux memory usage capture to correctly read memory statistics.
-
-### v0.5.0
-
-  - Added `--total-memory` option for scaling memory usage graphs, allowing users to set custom total memory values.
-  - Improved support for proportional memory usage (PSS).
-  - Exposed total system memory information.
 
 ## Contributing
 

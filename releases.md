@@ -1,6 +1,6 @@
 # Releases
 
-## Unreleased
+## v0.11.0
 
   - `process-metrics` command is removed, replaced with `bake process:metrics`.
 
