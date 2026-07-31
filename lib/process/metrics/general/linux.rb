@@ -23,6 +23,14 @@ module Process
 				File.directory?("/proc") && File.readable?("/proc/self/stat")
 			end
 			
+			# The Unix timestamp when the system booted.
+			def self.boot_time
+				@boot_time ||= File.foreach("/proc/stat") do |line|
+					break line.split.last.to_f if line.start_with?("btime ")
+				end
+			end
+			private_class_method :boot_time
+			
 			# Capture process information from /proc. If given `pid`, captures only those process(es). If given `ppid`, captures that parent and all descendants. Both can be given to capture a process and its children.
 			# @parameter pid [Integer | Array(Integer)] Process ID(s) to capture.
 			# @parameter ppid [Integer | Array(Integer)] Parent process ID(s) to include children for.
@@ -38,8 +46,6 @@ module Process
 				end
 				
 				uptime_jiffies = nil
-				boot_time = nil
-				
 				processes = {}
 				pids_to_read.each do |pid|
 					stat_path = "/proc/#{pid}/stat"
@@ -66,10 +72,6 @@ module Process
 						uptime_seconds = File.read("/proc/uptime").split(/\s+/).first.to_f
 						(uptime_seconds * CLK_TCK).to_i
 					end
-					boot_time ||= File.foreach("/proc/stat") do |line|
-						break line.split.last.to_f if line.start_with?("btime ")
-					end
-					
 					processor_time = (utime + stime).to_f / CLK_TCK
 					elapsed_time = [(uptime_jiffies - start_time).to_f / CLK_TCK, 0.0].max
 					

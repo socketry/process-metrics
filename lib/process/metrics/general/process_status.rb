@@ -14,16 +14,16 @@ module Process
 			
 			# The fields that will be extracted from the `ps` command (order matches -o output).
 			FIELDS = {
-				pid: ->(value){value.to_i},
-				ppid: ->(value){value.to_i},
-				pgid: ->(value){value.to_i},
-				pcpu: ->(value){value.to_f},
-				vsz: ->(value){value.to_i * 1024},
-				rss: ->(value){value.to_i * 1024},
-				time: Process::Metrics.method(:duration),
-				etime: Process::Metrics.method(:duration),
-				lstart: ->(value){Time.strptime(value, "%a %b %e %H:%M:%S %Y").to_f},
-				command: ->(value){value},
+				pid: ->(values){values.shift.to_i},
+				ppid: ->(values){values.shift.to_i},
+				pgid: ->(values){values.shift.to_i},
+				pcpu: ->(values){values.shift.to_f},
+				vsz: ->(values){values.shift.to_i * 1024},
+				rss: ->(values){values.shift.to_i * 1024},
+				time: ->(values){Process::Metrics.duration(values.shift)},
+				etime: ->(values){Process::Metrics.duration(values.shift)},
+				lstart: ->(values){Time.strptime(values.shift(5).join(" "), "%a %b %e %H:%M:%S %Y").to_f},
+				command: ->(values){values.join(" ")},
 			}
 			
 			# Whether process listing via ps is available on this system.
@@ -74,14 +74,22 @@ module Process
 				lines.each do |line|
 					next if line.empty?
 					
-					# The `lstart` field always contains five whitespace-separated components:
-					values = line.split(/\s+/, FIELDS.size + 4)
-					next if values.size < FIELDS.size + 4
+					values = line.split(/\s+/)
+					record = FIELDS.to_h{|name, parser| [name, parser.call(values)]}
 					
-					record = FIELDS.keys.first(8).map.with_index{|key, i| FIELDS[key].call(values[i])}
-					start_time = FIELDS[:lstart].call(values[8, 5].join(" "))
-					command = FIELDS[:command].call(values[13])
-					instance = General.new(*record, command, nil, start_time)
+					instance = General.new(
+						record[:pid],
+						record[:ppid],
+						record[:pgid],
+						record[:pcpu],
+						record[:vsz],
+						record[:rss],
+						record[:time],
+						record[:etime],
+						record[:command],
+						nil,
+						record[:lstart]
+					)
 					processes[instance.process_id] = instance
 				end
 				
