@@ -15,12 +15,17 @@ module Process
 			# @attribute swap_used_size [Integer, nil] Swap in use, or nil if not available.
 			# @attribute reclaimable_size [Integer, nil] Reclaimable memory (e.g. page cache, slab), or nil. Included in used_size.
 			Memory = Struct.new(:total_size, :used_size, :swap_total_size, :swap_used_size, :reclaimable_size) do
+				# Convert the memory snapshot to a hash, including derived sizes.
+				# @returns [Hash(Symbol, Integer | Nil)] The memory snapshot fields.
 				def to_h
 					super.merge(free_size: free_size, available_size: available_size)
 				end
 				
 				alias as_json to_h
 				
+				# Convert the memory snapshot to JSON.
+				# @parameter arguments [Array] Additional arguments passed to the JSON encoder.
+				# @returns [String] The encoded memory snapshot.
 				def to_json(*arguments)
 					as_json.to_json(*arguments)
 				end
