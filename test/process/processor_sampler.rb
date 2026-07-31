@@ -5,7 +5,7 @@
 
 require "process/metrics"
 
-describe Process::Metrics::Sampler do
+describe Process::Metrics::ProcessorSampler do
 	def process(process_id, processor_time, start_time = 1000.0)
 		Process::Metrics::General.new(process_id, nil, nil, nil, nil, nil, processor_time, nil, nil, nil, start_time)
 	end
@@ -18,7 +18,7 @@ describe Process::Metrics::Sampler do
 		
 		clock = ->{timestamps.shift}
 		
-		Process::Metrics::Sampler.new(capture: capture, clock: clock)
+		Process::Metrics::ProcessorSampler.new(capture: capture, clock: clock)
 	end
 	
 	with "#sample" do

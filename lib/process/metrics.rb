@@ -5,4 +5,4 @@
 
 require_relative "metrics/version"
 require_relative "metrics/general"
-require_relative "metrics/sampler"
+require_relative "metrics/processor_sampler"

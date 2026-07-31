@@ -2,7 +2,7 @@
 
 ## Unreleased
 
-  - Add `Process::Metrics::Sampler` for measuring per-process CPU utilization over an interval.
+  - Add `Process::Metrics::ProcessorSampler` for measuring per-process CPU utilization over an interval.
 
 ## v0.11.0
 
