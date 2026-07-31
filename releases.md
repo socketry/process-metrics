@@ -1,6 +1,6 @@
 # Releases
 
-## Unreleased
+## v0.12.0
 
   - Add `Process::Metrics::Processor` for measuring per-process CPU utilization over an interval.
 

@@ -7,6 +7,6 @@
 module Process
 	# @namespace
 	module Metrics
-		VERSION = "0.11.1"
+		VERSION = "0.12.0"
 	end
 end
