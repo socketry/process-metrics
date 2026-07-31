@@ -11,8 +11,8 @@ module Process
 			# @attribute [Integer] The process ID.
 			# @attribute [Float] The elapsed monotonic time in seconds.
 			# @attribute [Float] The CPU time consumed during the interval in seconds.
-			# @attribute [Float] The CPU utilization percentage, where one fully occupied core is `100.0`.
-			class Sample < Struct.new(:process_id, :duration, :processor_time, :processor_utilization)
+			# @attribute [Float] The CPU utilization, where one fully occupied core is `1.0`.
+			class Sample < Struct.new(:process_id, :duration, :processor_time, :utilization)
 			end
 			
 			# @private
@@ -53,10 +53,10 @@ module Process
 						next unless finite?(duration) && duration > 0.0
 						next unless finite?(processor_time) && processor_time >= 0.0
 						
-						processor_utilization = processor_time / duration * 100.0
-						next unless finite?(processor_utilization)
+						utilization = processor_time / duration
+						next unless finite?(utilization)
 						
-						samples[process_id] = Sample.new(process_id, duration, processor_time, processor_utilization).freeze
+						samples[process_id] = Sample.new(process_id, duration, processor_time, utilization).freeze
 					end
 				end
 				

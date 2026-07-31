@@ -38,7 +38,7 @@ describe Process::Metrics::Processor do
 			expect(sample.process_id).to be == 1
 			expect(sample.duration).to be == 1.0
 			expect(sample.processor_time).to be == 1.5
-			expect(sample.processor_utilization).to be == 150.0
+			expect(sample.utilization).to be == 1.5
 			expect(sample).to be(:frozen?)
 		end
 		
@@ -51,7 +51,7 @@ describe Process::Metrics::Processor do
 			instance.sample(1)
 			sample = instance.sample(1).fetch(1)
 			
-			expect(sample.processor_utilization).to be == 0.0
+			expect(sample.utilization).to be == 0.0
 		end
 		
 		it "samples multiple processes independently" do
@@ -63,8 +63,8 @@ describe Process::Metrics::Processor do
 			instance.sample([1, 2])
 			samples = instance.sample([1, 2])
 			
-			expect(samples[1].processor_utilization).to be == 50.0
-			expect(samples[2].processor_utilization).to be == 150.0
+			expect(samples[1].utilization).to be == 0.5
+			expect(samples[2].utilization).to be == 1.5
 		end
 		
 		it "establishes new baselines as the process set changes" do
@@ -90,7 +90,7 @@ describe Process::Metrics::Processor do
 			
 			instance.sample(1)
 			expect(instance.sample(1)).to be(:empty?)
-			expect(instance.sample(1).fetch(1).processor_utilization).to be == 100.0
+			expect(instance.sample(1).fetch(1).utilization).to be == 1.0
 		end
 		
 		it "rejects non-positive durations" do

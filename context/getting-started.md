@@ -76,10 +76,10 @@ sleep 1
 sample = processor.sample(Process.pid).fetch(Process.pid)
 sample.duration
 sample.processor_time
-sample.processor_utilization
+sample.utilization
 ```
 
-`processor_time` is the CPU time consumed during `duration`. `processor_utilization` is a percentage, where one fully occupied CPU core is approximately `100.0`. A process using multiple cores can exceed `100.0`.
+`processor_time` is the CPU time consumed during `duration`. `utilization` is a ratio, where one fully occupied CPU core is approximately `1.0`. A process using multiple cores can exceed `1.0`.
 
 ### Fields
 
