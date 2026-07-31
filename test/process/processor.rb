@@ -5,12 +5,12 @@
 
 require "process/metrics"
 
-describe Process::Metrics::ProcessorSampler do
+describe Process::Metrics::Processor do
 	def process(process_id, processor_time, start_time = 1000.0)
 		Process::Metrics::General.new(process_id, nil, nil, nil, nil, nil, processor_time, nil, nil, nil, start_time)
 	end
 	
-	def sampler(captures, timestamps)
+	def processor(captures, timestamps)
 		capture = ->(**options) do
 			@capture_options = options
 			captures.shift
@@ -18,12 +18,12 @@ describe Process::Metrics::ProcessorSampler do
 		
 		clock = ->{timestamps.shift}
 		
-		Process::Metrics::ProcessorSampler.new(capture: capture, clock: clock)
+		Process::Metrics::Processor.new(capture: capture, clock: clock)
 	end
 	
 	with "#sample" do
 		it "establishes a baseline before returning an interval sample" do
-			instance = sampler([
+			instance = processor([
 				{1 => process(1, 1.0)},
 				{1 => process(1, 2.5)},
 			], [10.0, 11.0])
@@ -40,7 +40,7 @@ describe Process::Metrics::ProcessorSampler do
 		end
 		
 		it "reports an idle process" do
-			instance = sampler([
+			instance = processor([
 				{1 => process(1, 1.0)},
 				{1 => process(1, 1.0)},
 			], [10.0, 12.0])
@@ -52,7 +52,7 @@ describe Process::Metrics::ProcessorSampler do
 		end
 		
 		it "samples multiple processes independently" do
-			instance = sampler([
+			instance = processor([
 				{1 => process(1, 1.0), 2 => process(2, 4.0)},
 				{1 => process(1, 1.5), 2 => process(2, 5.5)},
 			], [10.0, 11.0])
@@ -65,7 +65,7 @@ describe Process::Metrics::ProcessorSampler do
 		end
 		
 		it "establishes new baselines as the process set changes" do
-			instance = sampler([
+			instance = processor([
 				{1 => process(1, 1.0)},
 				{2 => process(2, 2.0)},
 				{1 => process(1, 2.0), 2 => process(2, 3.0)},
@@ -79,7 +79,7 @@ describe Process::Metrics::ProcessorSampler do
 		end
 		
 		it "does not compare different process incarnations" do
-			instance = sampler([
+			instance = processor([
 				{1 => process(1, 1.0, 1000.0)},
 				{1 => process(1, 2.0, 2000.0)},
 				{1 => process(1, 3.0, 2000.0)},
@@ -91,7 +91,7 @@ describe Process::Metrics::ProcessorSampler do
 		end
 		
 		it "rejects non-positive durations" do
-			instance = sampler([
+			instance = processor([
 				{1 => process(1, 1.0)},
 				{1 => process(1, 2.0)},
 			], [10.0, 10.0])
@@ -101,7 +101,7 @@ describe Process::Metrics::ProcessorSampler do
 		end
 		
 		it "rejects decreasing processor time" do
-			instance = sampler([
+			instance = processor([
 				{1 => process(1, 2.0)},
 				{1 => process(1, 1.0)},
 			], [10.0, 11.0])

@@ -21,7 +21,7 @@ $ gem install process-metrics
 The `process-metrics` gem provides a simple interface to collect and analyze process metrics.
 
 - {ruby Process::Metrics::General} is the main entry point for process metrics. Use {ruby Process::Metrics::General.capture} to collect metrics for one or more processes.
-- {ruby Process::Metrics::ProcessorSampler} computes CPU utilization over intervals from consecutive process snapshots.
+- {ruby Process::Metrics::Processor} computes CPU utilization over intervals from consecutive process snapshots.
 - {ruby Process::Metrics::Memory} provides additional methods for collecting memory metrics when the host operating system provides the necessary information.
 
 ## Usage
@@ -63,17 +63,17 @@ If you want to capture a tree of processes, you can specify the `ppid:` option i
 
 ### Sampling CPU Utilization
 
-A single process snapshot contains cumulative CPU time. Use {ruby Process::Metrics::ProcessorSampler} to calculate CPU utilization over an interval:
+A single process snapshot contains cumulative CPU time. Use {ruby Process::Metrics::Processor} to calculate CPU utilization over an interval:
 
 ``` ruby
-sampler = Process::Metrics::ProcessorSampler.new
+processor = Process::Metrics::Processor.new
 
 # Establish the initial baseline:
-sampler.sample(pid: Process.pid)
+processor.sample(pid: Process.pid)
 
 sleep 1
 
-sample = sampler.sample(pid: Process.pid).fetch(Process.pid)
+sample = processor.sample(pid: Process.pid).fetch(Process.pid)
 sample.duration
 sample.processor_time
 sample.processor_utilization

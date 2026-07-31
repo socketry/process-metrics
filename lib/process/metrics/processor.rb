@@ -6,7 +6,7 @@
 module Process
 	module Metrics
 		# Computes interval CPU utilization from cumulative process metrics.
-		class ProcessorSampler
+		class Processor
 			# An immutable measurement of process CPU usage over an interval.
 			# @attribute [Integer] The process ID.
 			# @attribute [Float] The elapsed monotonic time in seconds.
@@ -30,7 +30,7 @@ module Process
 			# Sample CPU utilization for the given processes.
 			# The first observation of each process establishes a baseline and does not produce a sample.
 			# @parameter pid [Integer | Array(Integer)] The process IDs to sample.
-			# @returns [Hash(Integer, ProcessorSampler::Sample)] The valid interval samples keyed by process ID.
+			# @returns [Hash(Integer, Processor::Sample)] The valid interval samples keyed by process ID.
 			def sample(pid:)
 				processes = @capture.call(pid: pid, memory: false)
 				timestamp = @clock.call
