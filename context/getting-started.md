@@ -69,11 +69,11 @@ A single process snapshot contains cumulative CPU time. Use {ruby Process::Metri
 processor = Process::Metrics::Processor.new
 
 # Establish the initial baseline:
-processor.sample(pid: Process.pid)
+processor.sample(Process.pid)
 
 sleep 1
 
-sample = processor.sample(pid: Process.pid).fetch(Process.pid)
+sample = processor.sample(Process.pid).fetch(Process.pid)
 sample.duration
 sample.processor_time
 sample.processor_utilization

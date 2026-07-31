@@ -27,10 +27,10 @@ module Process
 			
 			# Sample CPU utilization for the given processes.
 			# The first observation of each process establishes a baseline and does not produce a sample.
-			# @parameter pid [Integer | Array(Integer)] The process IDs to sample.
+			# @parameter process_ids [Integer | Array(Integer)] The process IDs to sample.
 			# @returns [Hash(Integer, Processor::Sample)] The valid interval samples keyed by process ID.
-			def sample(pid:)
-				processes = @capture.call(pid: pid, memory: false)
+			def sample(process_ids)
+				processes = @capture.call(pid: process_ids, memory: false)
 				timestamp = now
 				return {} unless finite?(timestamp)
 				

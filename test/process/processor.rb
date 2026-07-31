@@ -31,8 +31,8 @@ describe Process::Metrics::Processor do
 				{1 => process(1, 2.5)},
 			], [10.0, 11.0])
 			
-			expect(instance.sample(pid: 1)).to be(:empty?)
-			sample = instance.sample(pid: 1).fetch(1)
+			expect(instance.sample(1)).to be(:empty?)
+			sample = instance.sample(1).fetch(1)
 			
 			expect(@capture_options).to be == {pid: 1, memory: false}
 			expect(sample.process_id).to be == 1
@@ -48,8 +48,8 @@ describe Process::Metrics::Processor do
 				{1 => process(1, 1.0)},
 			], [10.0, 12.0])
 			
-			instance.sample(pid: 1)
-			sample = instance.sample(pid: 1).fetch(1)
+			instance.sample(1)
+			sample = instance.sample(1).fetch(1)
 			
 			expect(sample.processor_utilization).to be == 0.0
 		end
@@ -60,8 +60,8 @@ describe Process::Metrics::Processor do
 				{1 => process(1, 1.5), 2 => process(2, 5.5)},
 			], [10.0, 11.0])
 			
-			instance.sample(pid: [1, 2])
-			samples = instance.sample(pid: [1, 2])
+			instance.sample([1, 2])
+			samples = instance.sample([1, 2])
 			
 			expect(samples[1].processor_utilization).to be == 50.0
 			expect(samples[2].processor_utilization).to be == 150.0
@@ -74,9 +74,9 @@ describe Process::Metrics::Processor do
 				{1 => process(1, 2.0), 2 => process(2, 3.0)},
 			], [10.0, 11.0, 12.0])
 			
-			instance.sample(pid: [1])
-			expect(instance.sample(pid: [2])).to be(:empty?)
-			samples = instance.sample(pid: [1, 2])
+			instance.sample([1])
+			expect(instance.sample([2])).to be(:empty?)
+			samples = instance.sample([1, 2])
 			
 			expect(samples.keys).to be == [2]
 		end
@@ -88,9 +88,9 @@ describe Process::Metrics::Processor do
 				{1 => process(1, 3.0, 2000.0)},
 			], [10.0, 11.0, 12.0])
 			
-			instance.sample(pid: 1)
-			expect(instance.sample(pid: 1)).to be(:empty?)
-			expect(instance.sample(pid: 1).fetch(1).processor_utilization).to be == 100.0
+			instance.sample(1)
+			expect(instance.sample(1)).to be(:empty?)
+			expect(instance.sample(1).fetch(1).processor_utilization).to be == 100.0
 		end
 		
 		it "rejects non-positive durations" do
@@ -99,8 +99,8 @@ describe Process::Metrics::Processor do
 				{1 => process(1, 2.0)},
 			], [10.0, 10.0])
 			
-			instance.sample(pid: 1)
-			expect(instance.sample(pid: 1)).to be(:empty?)
+			instance.sample(1)
+			expect(instance.sample(1)).to be(:empty?)
 		end
 		
 		it "rejects decreasing processor time" do
@@ -109,8 +109,8 @@ describe Process::Metrics::Processor do
 				{1 => process(1, 1.0)},
 			], [10.0, 11.0])
 			
-			instance.sample(pid: 1)
-			expect(instance.sample(pid: 1)).to be(:empty?)
+			instance.sample(1)
+			expect(instance.sample(1)).to be(:empty?)
 		end
 	end
 end
