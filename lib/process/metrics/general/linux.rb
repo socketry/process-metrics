@@ -85,9 +85,9 @@ module Process
 						resident_pages * PAGE_SIZE,
 						processor_time,
 						elapsed_time,
+						BOOT_TIME + start_time.to_f / CLK_TCK,
 						command,
-						nil,
-						BOOT_TIME + start_time.to_f / CLK_TCK
+						nil
 					)
 				rescue Errno::ENOENT, Errno::ESRCH, Errno::EACCES
 					# Process disappeared or we can't read it.

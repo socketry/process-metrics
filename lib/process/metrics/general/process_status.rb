@@ -77,19 +77,7 @@ module Process
 					values = line.split(/\s+/)
 					record = FIELDS.to_h{|name, parser| [name, parser.call(values)]}
 					
-					instance = General.new(
-						record[:pid],
-						record[:ppid],
-						record[:pgid],
-						record[:pcpu],
-						record[:vsz],
-						record[:rss],
-						record[:time],
-						record[:etime],
-						record[:command],
-						nil,
-						record[:lstart]
-					)
+					instance = General.new(*record.values, nil)
 					processes[instance.process_id] = instance
 				end
 				

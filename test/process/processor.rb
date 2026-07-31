@@ -7,7 +7,7 @@ require "process/metrics"
 
 describe Process::Metrics::Processor do
 	def process(process_id, processor_time, start_time = 1000.0)
-		Process::Metrics::General.new(process_id, nil, nil, nil, nil, nil, processor_time, nil, nil, nil, start_time)
+		Process::Metrics::General.new(process_id, nil, nil, nil, nil, nil, processor_time, nil, start_time, nil, nil)
 	end
 	
 	def processor(captures, timestamps)
