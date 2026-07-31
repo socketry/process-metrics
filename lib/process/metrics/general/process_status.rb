@@ -75,9 +75,9 @@ module Process
 					next if line.empty?
 					
 					values = line.split(/\s+/)
-					record = FIELDS.to_h{|name, parser| [name, parser.call(values)]}
+					record = FIELDS.values.map{|parser| parser.call(values)}
 					
-					instance = General.new(*record.values, nil)
+					instance = General.new(*record, nil)
 					processes[instance.process_id] = instance
 				end
 				
