@@ -10,6 +10,9 @@ module Process
 			module Memory::Linux
 				DEFAULT_CGROUP_ROOT = "/sys/fs/cgroup"
 				
+				# Capture host memory from the available Linux interface.
+				# @parameter cgroup_root [String] The root of the cgroup filesystem.
+				# @returns [Host::Memory | Nil] The captured host memory, if available.
 				def self.capture(cgroup_root: DEFAULT_CGROUP_ROOT)
 					if Memory::Linux::CgroupV2.supported?(cgroup_root)
 						if capture = Memory::Linux::CgroupV2.new(cgroup_root: cgroup_root).capture

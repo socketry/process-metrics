@@ -6,9 +6,13 @@
 module Process
 	module Metrics
 		module Host
+			# Captures host memory limits and usage from a cgroup v2 filesystem.
 			class Memory::Linux::CgroupV2
 				DEFAULT_CGROUP_ROOT = "/sys/fs/cgroup"
 				
+				# Whether cgroup v2 memory metrics are available.
+				# @parameter cgroup_root [String | Nil] The root of the cgroup filesystem.
+				# @returns [Boolean] Whether the required cgroup v2 files exist.
 				def self.supported?(cgroup_root = DEFAULT_CGROUP_ROOT)
 					root = (cgroup_root || DEFAULT_CGROUP_ROOT).to_s.chomp("/")
 					
@@ -19,10 +23,14 @@ module Process
 					return false
 				end
 				
+				# Initialize the cgroup v2 memory reader.
+				# @parameter cgroup_root [String | Nil] The root of the cgroup filesystem.
 				def initialize(cgroup_root: nil)
 					@cgroup_root = (cgroup_root || DEFAULT_CGROUP_ROOT).to_s.chomp("/")
 				end
 				
+				# Capture host memory from the cgroup v2 filesystem.
+				# @returns [Host::Memory | Nil] The captured host memory, if the cgroup has a finite limit.
 				def capture
 					total = read_total
 					return nil unless total && total.positive?

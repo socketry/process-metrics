@@ -6,11 +6,16 @@
 module Process
 	module Metrics
 		module Host
+			# Captures host memory from Linux `/proc/meminfo`.
 			class Memory::Linux::Meminfo
+				# Whether `/proc/meminfo` is available.
+				# @returns [Boolean] Whether the procfs memory information exists.
 				def self.supported?
 					File.exist?("/proc/meminfo")
 				end
 				
+				# Capture host memory from `/proc/meminfo`.
+				# @returns [Host::Memory | Nil] The captured host memory, if available.
 				def capture
 					content = File.read("/proc/meminfo") rescue nil
 					return nil unless content
