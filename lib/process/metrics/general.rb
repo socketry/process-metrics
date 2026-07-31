@@ -35,7 +35,7 @@ module Process
 		end
 		
 		# General process information.
-		class General < Struct.new(:process_id, :parent_process_id, :process_group_id, :processor_utilization, :virtual_size, :resident_size, :processor_time, :elapsed_time, :command, :memory)
+		class General < Struct.new(:process_id, :parent_process_id, :process_group_id, :processor_utilization, :virtual_size, :resident_size, :processor_time, :elapsed_time, :start_time, :command, :memory)
 			# Convert the object to a JSON serializable hash.
 			def as_json
 				{
@@ -48,6 +48,7 @@ module Process
 					resident_size: self.resident_size,
 					processor_time: self.processor_time,
 					elapsed_time: self.elapsed_time,
+					start_time: self.start_time,
 					command: self.command,
 					memory: self.memory&.as_json,
 				}

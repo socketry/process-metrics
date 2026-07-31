@@ -18,9 +18,16 @@ module Process
 			# Page size in bytes for RSS (resident set size is in pages in /proc/pid/stat).
 			PAGE_SIZE = Etc.sysconf(Etc::SC_PAGESIZE) rescue 4096
 			
+			# The Unix timestamp when the system booted.
+			BOOT_TIME = if File.readable?("/proc/stat")
+				File.foreach("/proc/stat") do |line|
+					break line.split.last.to_f if line.start_with?("btime ")
+				end
+			end
+			
 			# Whether /proc is available so we can list processes without ps.
 			def self.supported?
-				File.directory?("/proc") && File.readable?("/proc/self/stat")
+				File.directory?("/proc") && File.readable?("/proc/self/stat") && File.readable?("/proc/uptime") && !BOOT_TIME.nil?
 			end
 			
 			# Capture process information from /proc. If given `pid`, captures only those process(es). If given `ppid`, captures that parent and all descendants. Both can be given to capture a process and its children.
@@ -38,7 +45,6 @@ module Process
 				end
 				
 				uptime_jiffies = nil
-				
 				processes = {}
 				pids_to_read.each do |pid|
 					stat_path = "/proc/#{pid}/stat"
@@ -56,7 +62,7 @@ module Process
 					process_group_id = fields[2].to_i
 					utime = fields[11].to_i
 					stime = fields[12].to_i
-					starttime = fields[19].to_i
+					start_time = fields[19].to_i
 					virtual_size = fields[20].to_i
 					resident_pages = fields[21].to_i
 					
@@ -65,9 +71,8 @@ module Process
 						uptime_seconds = File.read("/proc/uptime").split(/\s+/).first.to_f
 						(uptime_seconds * CLK_TCK).to_i
 					end
-					
 					processor_time = (utime + stime).to_f / CLK_TCK
-					elapsed_time = [(uptime_jiffies - starttime).to_f / CLK_TCK, 0.0].max
+					elapsed_time = [(uptime_jiffies - start_time).to_f / CLK_TCK, 0.0].max
 					
 					command = read_command(pid, executable_name)
 					
@@ -80,6 +85,7 @@ module Process
 						resident_pages * PAGE_SIZE,
 						processor_time,
 						elapsed_time,
+						BOOT_TIME + start_time.to_f / CLK_TCK,
 						command,
 						nil
 					)

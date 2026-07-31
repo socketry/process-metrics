@@ -5,3 +5,4 @@
 
 require_relative "metrics/version"
 require_relative "metrics/general"
+require_relative "metrics/processor"

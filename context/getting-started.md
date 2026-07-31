@@ -21,6 +21,7 @@ $ gem install process-metrics
 The `process-metrics` gem provides a simple interface to collect and analyze process metrics.
 
 - {ruby Process::Metrics::General} is the main entry point for process metrics. Use {ruby Process::Metrics::General.capture} to collect metrics for one or more processes.
+- {ruby Process::Metrics::Processor} computes CPU utilization over intervals from consecutive process snapshots.
 - {ruby Process::Metrics::Memory} provides additional methods for collecting memory metrics when the host operating system provides the necessary information.
 
 ## Usage
@@ -60,6 +61,26 @@ Process::Metrics::General.capture(pid: Process.pid)
 
 If you want to capture a tree of processes, you can specify the `ppid:` option instead.
 
+### Sampling CPU Utilization
+
+A single process snapshot contains cumulative CPU time. Use {ruby Process::Metrics::Processor} to calculate CPU utilization over an interval:
+
+``` ruby
+processor = Process::Metrics::Processor.new
+
+# Establish the initial baseline:
+processor.sample(Process.pid)
+
+sleep 1
+
+sample = processor.sample(Process.pid).fetch(Process.pid)
+sample.duration
+sample.processor_time
+sample.utilization
+```
+
+`processor_time` is the CPU time consumed during `duration`. `utilization` is a ratio, where one fully occupied CPU core is approximately `1.0`. A process using multiple cores can exceed `1.0`.
+
 ### Fields
 
 The {ruby Process::Metrics::General} struct contains the following fields:
@@ -72,6 +93,7 @@ The {ruby Process::Metrics::General} struct contains the following fields:
 - `resident_size` - Resident (Set) Size (bytes), the amount of physical memory used by the process.
 - `processor_time` - CPU Time (s), the amount of CPU time used by the process.
 - `elapsed_time` - Elapsed Time (s), the amount of time the process has been running.
+- `start_time` - Start Time, expressed as seconds since the Unix epoch.
 - `command` - Command Name, the name of the command that started the process.
 
 The {ruby Process::Metrics::Memory} struct contains the following fields:

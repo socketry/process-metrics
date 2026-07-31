@@ -1,5 +1,9 @@
 # Releases
 
+## Unreleased
+
+  - Add `Process::Metrics::Processor` for measuring per-process CPU utilization over an interval.
+
 ## v0.11.0
 
   - `process-metrics` command is removed, replaced with `bake process:metrics`.

@@ -32,6 +32,7 @@ describe Process::Metrics::General do
 				expect(linux_process.command).to be == process_status_process.command
 				expect((linux_process.processor_time - process_status_process.processor_time).abs).to be < 1.0
 				expect((linux_process.elapsed_time - process_status_process.elapsed_time).abs).to be < 1.0
+				expect((linux_process.start_time - process_status_process.start_time).abs).to be < 2.0
 			end
 		end
 		

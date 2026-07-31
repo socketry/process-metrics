@@ -3,6 +3,8 @@
 # Released under the MIT License.
 # Copyright, 2026, by Samuel Williams.
 
+require "time"
+
 module Process
 	module Metrics
 		# General process information via the process status command (`ps`). Used on non-Linux platforms (e.g. Darwin)
@@ -12,15 +14,16 @@ module Process
 			
 			# The fields that will be extracted from the `ps` command (order matches -o output).
 			FIELDS = {
-				pid: ->(value){value.to_i},
-				ppid: ->(value){value.to_i},
-				pgid: ->(value){value.to_i},
-				pcpu: ->(value){value.to_f},
-				vsz: ->(value){value.to_i * 1024},
-				rss: ->(value){value.to_i * 1024},
-				time: Process::Metrics.method(:duration),
-				etime: Process::Metrics.method(:duration),
-				command: ->(value){value},
+				pid: ->(values){values.shift.to_i},
+				ppid: ->(values){values.shift.to_i},
+				pgid: ->(values){values.shift.to_i},
+				pcpu: ->(values){values.shift.to_f},
+				vsz: ->(values){values.shift.to_i * 1024},
+				rss: ->(values){values.shift.to_i * 1024},
+				time: ->(values){Process::Metrics.duration(values.shift)},
+				etime: ->(values){Process::Metrics.duration(values.shift)},
+				lstart: ->(values){Time.strptime(values.shift(5).join(" "), "%a %b %e %H:%M:%S %Y").to_f},
+				command: ->(values){values.join(" ")},
 			}
 			
 			# Whether process listing via ps is available on this system.
@@ -48,7 +51,7 @@ module Process
 					
 					arguments.push("-o", FIELDS.keys.join(","))
 					
-					spawned_pid = Process.spawn(*arguments, out: output)
+					spawned_pid = Process.spawn({"LC_ALL" => "C"}, *arguments, out: output)
 					output.close
 					
 					input.readlines.map(&:strip)
@@ -71,10 +74,9 @@ module Process
 				lines.each do |line|
 					next if line.empty?
 					
-					values = line.split(/\s+/, FIELDS.size)
-					next if values.size < FIELDS.size
+					values = line.split(/\s+/)
+					record = FIELDS.values.map{|parser| parser.call(values)}
 					
-					record = FIELDS.keys.map.with_index{|key, i| FIELDS[key].call(values[i])}
 					instance = General.new(*record, nil)
 					processes[instance.process_id] = instance
 				end
