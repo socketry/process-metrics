@@ -29,7 +29,6 @@ module Process
 					break line.split.last.to_f if line.start_with?("btime ")
 				end
 			end
-			private_class_method :boot_time
 			
 			# Capture process information from /proc. If given `pid`, captures only those process(es). If given `ppid`, captures that parent and all descendants. Both can be given to capture a process and its children.
 			# @parameter pid [Integer | Array(Integer)] Process ID(s) to capture.
