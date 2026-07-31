@@ -3,13 +3,13 @@
 # Released under the MIT License.
 # Copyright, 2026, by Samuel Williams.
 
+require "time"
+
 module Process
 	module Metrics
 		# General process information via the process status command (`ps`). Used on non-Linux platforms (e.g. Darwin)
 		# where there is no /proc; ps is the portable way to get pid, ppid, times, and memory in one pass.
 		module General::ProcessStatus
-			require "time"
-			
 			PS = "ps"
 			
 			# The fields that will be extracted from the `ps` command (order matches -o output).
