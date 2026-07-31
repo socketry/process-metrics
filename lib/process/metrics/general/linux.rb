@@ -18,16 +18,16 @@ module Process
 			# Page size in bytes for RSS (resident set size is in pages in /proc/pid/stat).
 			PAGE_SIZE = Etc.sysconf(Etc::SC_PAGESIZE) rescue 4096
 			
+			# The Unix timestamp when the system booted.
+			BOOT_TIME = if File.readable?("/proc/stat")
+				File.foreach("/proc/stat") do |line|
+					break line.split.last.to_f if line.start_with?("btime ")
+				end
+			end
+			
 			# Whether /proc is available so we can list processes without ps.
 			def self.supported?
 				File.directory?("/proc") && File.readable?("/proc/self/stat")
-			end
-			
-			# The Unix timestamp when the system booted.
-			def self.boot_time
-				@boot_time ||= File.foreach("/proc/stat") do |line|
-					break line.split.last.to_f if line.start_with?("btime ")
-				end
 			end
 			
 			# Capture process information from /proc. If given `pid`, captures only those process(es). If given `ppid`, captures that parent and all descendants. Both can be given to capture a process and its children.
@@ -87,7 +87,7 @@ module Process
 						elapsed_time,
 						command,
 						nil,
-						boot_time + start_time.to_f / CLK_TCK
+						BOOT_TIME + start_time.to_f / CLK_TCK
 					)
 				rescue Errno::ENOENT, Errno::ESRCH, Errno::EACCES
 					# Process disappeared or we can't read it.
