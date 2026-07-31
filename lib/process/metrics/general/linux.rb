@@ -38,6 +38,7 @@ module Process
 				end
 				
 				uptime_jiffies = nil
+				boot_time = nil
 				
 				processes = {}
 				pids_to_read.each do |pid|
@@ -65,6 +66,9 @@ module Process
 						uptime_seconds = File.read("/proc/uptime").split(/\s+/).first.to_f
 						(uptime_seconds * CLK_TCK).to_i
 					end
+					boot_time ||= File.foreach("/proc/stat") do |line|
+						break line.split.last.to_f if line.start_with?("btime ")
+					end
 					
 					processor_time = (utime + stime).to_f / CLK_TCK
 					elapsed_time = [(uptime_jiffies - starttime).to_f / CLK_TCK, 0.0].max
@@ -81,7 +85,8 @@ module Process
 						processor_time,
 						elapsed_time,
 						command,
-						nil
+						nil,
+						boot_time + starttime.to_f / CLK_TCK
 					)
 				rescue Errno::ENOENT, Errno::ESRCH, Errno::EACCES
 					# Process disappeared or we can't read it.

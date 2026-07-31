@@ -34,6 +34,7 @@ describe Process::Metrics::General do
 			expect(process.process_id).to be == pid
 			expect(process.parent_process_id).to be_a(Integer)
 			expect(process.process_group_id).to be_a(Integer)
+			expect(process.start_time).to be_a(Numeric)
 		end
 	end
 	

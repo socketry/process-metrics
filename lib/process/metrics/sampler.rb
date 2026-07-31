@@ -1,0 +1,78 @@
+# frozen_string_literal: true
+
+# Released under the MIT License.
+# Copyright, 2026, by Samuel Williams.
+
+module Process
+	module Metrics
+		# Computes interval CPU utilization from cumulative process metrics.
+		class Sampler
+			# An immutable measurement of process CPU usage over an interval.
+			# @attribute [Integer] The process ID.
+			# @attribute [Float] The elapsed monotonic time in seconds.
+			# @attribute [Float] The CPU time consumed during the interval in seconds.
+			# @attribute [Float] The CPU utilization percentage, where one fully occupied core is `100.0`.
+			class Sample < Struct.new(:process_id, :duration, :processor_time, :processor_utilization)
+			end
+			
+			# @private
+			Snapshot = Struct.new(:start_time, :processor_time, :timestamp)
+			
+			# Initialize a process metrics sampler.
+			# @parameter capture [Interface(:call)] The process snapshot capture callable.
+			# @parameter clock [Interface(:call)] The monotonic clock callable.
+			def initialize(capture: General.method(:capture), clock: nil)
+				@capture = capture
+				@clock = clock || ->{Process.clock_gettime(Process::CLOCK_MONOTONIC)}
+				@snapshots = {}
+			end
+			
+			# Sample CPU utilization for the given processes.
+			# The first observation of each process establishes a baseline and does not produce a sample.
+			# @parameter pid [Integer | Array(Integer)] The process IDs to sample.
+			# @returns [Hash(Integer, Sampler::Sample)] The valid interval samples keyed by process ID.
+			def sample(pid:)
+				processes = @capture.call(pid: pid, memory: false)
+				timestamp = @clock.call
+				return {} unless finite?(timestamp)
+				
+				samples = {}
+				snapshots = {}
+				
+				processes.each do |process_id, process|
+					start_time = process.start_time
+					processor_time = process.processor_time
+					next unless finite?(start_time) && finite?(processor_time)
+					
+					current = Snapshot.new(start_time, processor_time, timestamp)
+					snapshots[process_id] = current
+					
+					if previous = @snapshots[process_id]
+						next unless previous.start_time == current.start_time
+						
+						duration = current.timestamp - previous.timestamp
+						processor_time = current.processor_time - previous.processor_time
+						next unless finite?(duration) && duration > 0.0
+						next unless finite?(processor_time) && processor_time >= 0.0
+						
+						processor_utilization = processor_time / duration * 100.0
+						next unless finite?(processor_utilization)
+						
+						samples[process_id] = Sample.new(process_id, duration, processor_time, processor_utilization).freeze
+					end
+				end
+				
+				@snapshots = snapshots
+				
+				return samples
+			end
+			
+			private
+			
+			# Whether the value is a finite number.
+			def finite?(value)
+				value.is_a?(Numeric) && value.finite?
+			end
+		end
+	end
+end

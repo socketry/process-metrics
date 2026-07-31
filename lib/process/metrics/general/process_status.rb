@@ -8,6 +8,8 @@ module Process
 		# General process information via the process status command (`ps`). Used on non-Linux platforms (e.g. Darwin)
 		# where there is no /proc; ps is the portable way to get pid, ppid, times, and memory in one pass.
 		module General::ProcessStatus
+			require "time"
+			
 			PS = "ps"
 			
 			# The fields that will be extracted from the `ps` command (order matches -o output).
@@ -20,6 +22,7 @@ module Process
 				rss: ->(value){value.to_i * 1024},
 				time: Process::Metrics.method(:duration),
 				etime: Process::Metrics.method(:duration),
+				lstart: ->(value){Time.strptime(value, "%a %b %e %H:%M:%S %Y").to_f},
 				command: ->(value){value},
 			}
 			
@@ -48,7 +51,7 @@ module Process
 					
 					arguments.push("-o", FIELDS.keys.join(","))
 					
-					spawned_pid = Process.spawn(*arguments, out: output)
+					spawned_pid = Process.spawn({"LC_ALL" => "C"}, *arguments, out: output)
 					output.close
 					
 					input.readlines.map(&:strip)
@@ -71,11 +74,14 @@ module Process
 				lines.each do |line|
 					next if line.empty?
 					
-					values = line.split(/\s+/, FIELDS.size)
-					next if values.size < FIELDS.size
+					# The `lstart` field always contains five whitespace-separated components:
+					values = line.split(/\s+/, FIELDS.size + 4)
+					next if values.size < FIELDS.size + 4
 					
-					record = FIELDS.keys.map.with_index{|key, i| FIELDS[key].call(values[i])}
-					instance = General.new(*record, nil)
+					record = FIELDS.keys.first(8).map.with_index{|key, i| FIELDS[key].call(values[i])}
+					start_time = FIELDS[:lstart].call(values[8, 5].join(" "))
+					command = FIELDS[:command].call(values[13])
+					instance = General.new(*record, command, nil, start_time)
 					processes[instance.process_id] = instance
 				end
 				
