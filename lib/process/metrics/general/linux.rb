@@ -27,7 +27,7 @@ module Process
 			
 			# Whether /proc is available so we can list processes without ps.
 			def self.supported?
-				File.directory?("/proc") && File.readable?("/proc/self/stat")
+				File.directory?("/proc") && File.readable?("/proc/self/stat") && File.readable?("/proc/uptime") && !BOOT_TIME.nil?
 			end
 			
 			# Capture process information from /proc. If given `pid`, captures only those process(es). If given `ppid`, captures that parent and all descendants. Both can be given to capture a process and its children.
