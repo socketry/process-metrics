@@ -20,10 +20,8 @@ module Process
 			
 			# Initialize a process metrics sampler.
 			# @parameter capture [Interface(:call)] The process snapshot capture callable.
-			# @parameter clock [Interface(:call)] The monotonic clock callable.
-			def initialize(capture: General.method(:capture), clock: nil)
+			def initialize(capture: General.method(:capture))
 				@capture = capture
-				@clock = clock || ->{Process.clock_gettime(Process::CLOCK_MONOTONIC)}
 				@snapshots = {}
 			end
 			
@@ -33,7 +31,7 @@ module Process
 			# @returns [Hash(Integer, Processor::Sample)] The valid interval samples keyed by process ID.
 			def sample(pid:)
 				processes = @capture.call(pid: pid, memory: false)
-				timestamp = @clock.call
+				timestamp = now
 				return {} unless finite?(timestamp)
 				
 				samples = {}
@@ -68,6 +66,11 @@ module Process
 			end
 			
 			private
+			
+			# Get the current monotonic time.
+			def now
+				Process.clock_gettime(Process::CLOCK_MONOTONIC)
+			end
 			
 			# Whether the value is a finite number.
 			def finite?(value)

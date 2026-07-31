@@ -16,9 +16,12 @@ describe Process::Metrics::Processor do
 			captures.shift
 		end
 		
-		clock = ->{timestamps.shift}
+		processor_class = Class.new(Process::Metrics::Processor) do
+			define_method(:now) {timestamps.shift}
+			private :now
+		end
 		
-		Process::Metrics::Processor.new(capture: capture, clock: clock)
+		processor_class.new(capture: capture)
 	end
 	
 	with "#sample" do
