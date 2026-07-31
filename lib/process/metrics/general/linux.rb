@@ -57,7 +57,7 @@ module Process
 					process_group_id = fields[2].to_i
 					utime = fields[11].to_i
 					stime = fields[12].to_i
-					starttime = fields[19].to_i
+					start_time = fields[19].to_i
 					virtual_size = fields[20].to_i
 					resident_pages = fields[21].to_i
 					
@@ -71,7 +71,7 @@ module Process
 					end
 					
 					processor_time = (utime + stime).to_f / CLK_TCK
-					elapsed_time = [(uptime_jiffies - starttime).to_f / CLK_TCK, 0.0].max
+					elapsed_time = [(uptime_jiffies - start_time).to_f / CLK_TCK, 0.0].max
 					
 					command = read_command(pid, executable_name)
 					
@@ -86,7 +86,7 @@ module Process
 						elapsed_time,
 						command,
 						nil,
-						boot_time + starttime.to_f / CLK_TCK
+						boot_time + start_time.to_f / CLK_TCK
 					)
 				rescue Errno::ENOENT, Errno::ESRCH, Errno::EACCES
 					# Process disappeared or we can't read it.
