@@ -35,6 +35,7 @@ module Process
 		end
 		
 		# General process information.
+		# @attribute [Float] The processor utilization in core units, where `1.0` represents one fully occupied CPU core. Multi-threaded processes may report values greater than `1.0`.
 		class General < Struct.new(:process_id, :parent_process_id, :process_group_id, :processor_utilization, :virtual_size, :resident_size, :processor_time, :elapsed_time, :start_time, :command, :memory)
 			# Convert the object to a JSON serializable hash.
 			def as_json

@@ -1,5 +1,9 @@
 # Releases
 
+## Unreleased
+
+  - Normalize processor utilization to core units, where `1.0` represents one fully occupied CPU core, and restore Linux reporting.
+
 ## v0.12.0
 
   - Add `Process::Metrics::Processor` for measuring per-process CPU utilization over an interval.

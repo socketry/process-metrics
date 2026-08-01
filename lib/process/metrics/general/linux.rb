@@ -73,6 +73,11 @@ module Process
 					end
 					processor_time = (utime + stime).to_f / CLK_TCK
 					elapsed_time = [(uptime_jiffies - start_time).to_f / CLK_TCK, 0.0].max
+					processor_utilization = if elapsed_time > 0.0
+						processor_time.fdiv(elapsed_time)
+					else
+						0.0
+					end
 					
 					command = read_command(pid, executable_name)
 					
@@ -80,7 +85,7 @@ module Process
 						pid,
 						parent_process_id,
 						process_group_id,
-						0.0, # processor_utilization: would need two samples; not available from single stat read
+						processor_utilization,
 						virtual_size,
 						resident_pages * PAGE_SIZE,
 						processor_time,

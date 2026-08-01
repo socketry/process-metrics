@@ -17,7 +17,7 @@ module Process
 				pid: ->(values){values.shift.to_i},
 				ppid: ->(values){values.shift.to_i},
 				pgid: ->(values){values.shift.to_i},
-				pcpu: ->(values){values.shift.to_f},
+				pcpu: ->(values){values.shift.to_f / 100.0},
 				vsz: ->(values){values.shift.to_i * 1024},
 				rss: ->(values){values.shift.to_i * 1024},
 				time: ->(values){Process::Metrics.duration(values.shift)},
