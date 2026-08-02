@@ -1,6 +1,6 @@
 # Releases
 
-## Unreleased
+## v0.13.0
 
   - Normalize processor utilization to core units, where `1.0` represents one fully occupied CPU core, and restore Linux reporting.
 
