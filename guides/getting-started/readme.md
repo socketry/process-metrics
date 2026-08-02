@@ -21,6 +21,7 @@ $ gem install process-metrics
 The `process-metrics` gem provides a simple interface to collect and analyze process metrics.
 
 - {ruby Process::Metrics::General} is the main entry point for process metrics. Use {ruby Process::Metrics::General.capture} to collect metrics for one or more processes.
+- {ruby Process::Metrics::Processor} measures processor utilization over intervals between samples.
 - {ruby Process::Metrics::Memory} provides additional methods for collecting memory metrics when the host operating system provides the necessary information.
 
 ## Usage
@@ -67,7 +68,7 @@ The {ruby Process::Metrics::General} struct contains the following fields:
 - `process_id` - Process ID, a unique identifier for the process.
 - `parent_process_id` - Parent Process ID, the process ID of the process that started this process.
 - `process_group_id` - Process Group ID, the process group ID of the process, which can be shared by multiple processes.
-- `processor_utilization` - Processor Utilization (%), the percentage of CPU time used by the process (over a system-specific duration).
+- `processor_utilization` - Average processor utilization in core units over the system's observation period. `1.0` represents one fully occupied CPU core, and multi-threaded processes can exceed `1.0`.
 - `total_size` - Memory Size (bytes), the total size of the process's memory space (usually over-estimated as it doesn't take into account shared memory).
 - `resident_size` - Resident (Set) Size (bytes), the amount of physical memory used by the process.
 - `processor_time` - CPU Time (s), the amount of CPU time used by the process.
@@ -89,3 +90,25 @@ The {ruby Process::Metrics::Memory} struct contains the following fields:
 - `proportional_swap_size` - Proportional Swap Memory Size (bytes), the amount of memory that has been swapped to disk, excluding shared memory.
 
 In general, the interpretation of these fields is operating system specific. At best, they provide a rough estimate of the process's memory usage, but you should consult the documentation for your operating system for more details on exactly what each field represents.
+
+## Interval Processor Utilization
+
+The processor utilization reported by {ruby Process::Metrics::General} is a snapshot based on the operating system's observation period. Use {ruby Process::Metrics::Processor} when you need utilization over a specific sampling interval:
+
+``` ruby
+processor = Process::Metrics::Processor.new
+
+# The first sample establishes a baseline:
+processor.sample(Process.pid)
+
+sleep(10)
+sample = processor.sample(Process.pid).fetch(Process.pid)
+
+sample.duration
+# => approximately 10.0
+
+sample.utilization
+# => 1.0 means one fully occupied CPU core during the interval
+```
+
+Both interfaces use the same core-unit scale. A utilization of `0.5` means half of one core on average, while `2.0` means two cores were fully occupied. Utilization is therefore not limited to the range `0.0..1.0`.

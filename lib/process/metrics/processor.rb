@@ -11,7 +11,7 @@ module Process
 			# @attribute [Integer] The process ID.
 			# @attribute [Float] The elapsed monotonic time in seconds.
 			# @attribute [Float] The CPU time consumed during the interval in seconds.
-			# @attribute [Float] The CPU utilization, where one fully occupied core is `1.0`.
+			# @attribute [Float] The CPU utilization in core units, where `1.0` represents one fully occupied core. Multi-threaded processes may report values greater than `1.0`.
 			class Sample < Struct.new(:process_id, :duration, :processor_time, :utilization)
 			end
 			

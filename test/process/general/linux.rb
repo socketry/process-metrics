@@ -30,6 +30,12 @@ describe Process::Metrics::General do
 				expect(linux_process.resident_size).to be_within(10.0).percent_of(process_status_process.resident_size)
 				
 				expect(linux_process.command).to be == process_status_process.command
+				expected_utilization = if linux_process.elapsed_time > 0.0
+					linux_process.processor_time.fdiv(linux_process.elapsed_time)
+				else
+					0.0
+				end
+				expect(linux_process.processor_utilization).to be == expected_utilization
 				expect((linux_process.processor_time - process_status_process.processor_time).abs).to be < 1.0
 				expect((linux_process.elapsed_time - process_status_process.elapsed_time).abs).to be < 1.0
 				expect((linux_process.start_time - process_status_process.start_time).abs).to be < 2.0
