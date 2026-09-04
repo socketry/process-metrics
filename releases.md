@@ -1,6 +1,6 @@
 # Releases
 
-## Unreleased
+## v0.14.0
 
   - Add `Process::Metrics::Processor.count` and `.quota` for affinity-aware processor counts and cgroup v2-aware processor capacity.
 

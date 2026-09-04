@@ -16,6 +16,10 @@ Please see the [project documentation](https://socketry.github.io/process-metric
 
 Please see the [project releases](https://socketry.github.io/process-metrics/releases/index) for all releases.
 
+### v0.14.0
+
+  - Add `Process::Metrics::Processor.count` and `.quota` for affinity-aware processor counts and cgroup v2-aware processor capacity.
+
 ### v0.13.0
 
   - Normalize processor utilization to core units, where `1.0` represents one fully occupied CPU core, and restore Linux reporting.
@@ -55,10 +59,6 @@ Please see the [project releases](https://socketry.github.io/process-metrics/rel
 ### v0.7.0
 
   - Be more proactive about returning nil if memory capture failed.
-
-### v0.6.1
-
-  - Handle `Errno::ESRCH: No such process @ io_fillbuf - fd:xxx /proc/xxx/smaps_rollup` by ignoring it.
 
 ## Contributing
 
