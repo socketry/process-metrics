@@ -1,5 +1,9 @@
 # Releases
 
+## Unreleased
+
+  - Add `Process::Metrics::Processor.count` and `.quota` for affinity-aware processor counts and cgroup v2-aware processor capacity.
+
 ## v0.13.0
 
   - Normalize processor utilization to core units, where `1.0` represents one fully occupied CPU core, and restore Linux reporting.

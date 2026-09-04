@@ -3,10 +3,26 @@
 # Released under the MIT License.
 # Copyright, 2026, by Samuel Williams.
 
+require "etc"
+
 module Process
 	module Metrics
 		# Computes interval CPU utilization from cumulative process metrics.
 		class Processor
+			# The number of processors available to the current process.
+			# On Linux, this takes the process CPU affinity into account.
+			# @returns [Integer] The number of available processors.
+			def self.count
+				Etc.nprocessors
+			end
+			
+			# The processor capacity available to the current process.
+			# On Linux, this takes cgroup v2 CPU bandwidth limits into account. Otherwise, it returns {count} as a `Float`.
+			# @returns [Float] The available processor capacity in core units.
+			def self.quota
+				return self.count.to_f
+			end
+			
 			# An immutable measurement of process CPU usage over an interval.
 			# @attribute [Integer] The process ID.
 			# @attribute [Float] The elapsed monotonic time in seconds.
@@ -78,4 +94,8 @@ module Process
 			end
 		end
 	end
+end
+
+if RUBY_PLATFORM.include?("linux")
+	require_relative "processor/linux"
 end
