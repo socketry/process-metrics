@@ -112,3 +112,17 @@ sample.utilization
 ```
 
 Both interfaces use the same core-unit scale. A utilization of `0.5` means half of one core on average, while `2.0` means two cores were fully occupied. Utilization is therefore not limited to the range `0.0..1.0`.
+
+## Processor Capacity
+
+Use {ruby Process::Metrics::Processor.count} to get the number of processors available to the current process. On Linux, this takes CPU affinity into account.
+
+Use {ruby Process::Metrics::Processor.quota} to get the available processor capacity as a `Float`. On Linux, it also takes cgroup v2 CPU bandwidth limits into account. On other systems, when no finite quota is configured, or when the quota cannot be determined, it returns {ruby Process::Metrics::Processor.count} as a `Float`.
+
+``` ruby
+Process::Metrics::Processor.count
+# => 8
+
+Process::Metrics::Processor.quota
+# => 1.5
+```
