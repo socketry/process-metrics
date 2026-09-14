@@ -49,53 +49,40 @@ describe "process:metrics bake task" do
 	let(:terminal) {FakeTerminal.new}
 	
 	it "does not add private memory to proportional memory in the summary total" do
-		general_capture = Process::Metrics::General.method(:capture)
-		host_memory_capture = Process::Metrics::Host::Memory.method(:capture)
+		memory = Process::Metrics::Memory.new(
+			1,
+			110 * 1024 * 1024,
+			100 * 1024 * 1024,
+			20 * 1024 * 1024,
+			0,
+			10 * 1024 * 1024,
+			80 * 1024 * 1024,
+			0,
+			0,
+			0,
+			0,
+			0,
+			0
+		)
 		
-		begin
-			Process::Metrics::General.define_singleton_method(:capture) do |pid: nil, ppid: nil|
-				memory = Process::Metrics::Memory.new(
-					1,
-					110 * 1024 * 1024,
-					100 * 1024 * 1024,
-					20 * 1024 * 1024,
-					0,
-					10 * 1024 * 1024,
-					80 * 1024 * 1024,
-					0,
-					0,
-					0,
-					0,
-					0,
-					0
-				)
-				
-				process = Process::Metrics::General.new(
-					pid,
-					nil,
-					nil,
-					0.0,
-					0,
-					110 * 1024 * 1024,
-					0.0,
-					0.0,
-					0.0,
-					"test process",
-					memory
-				)
-				
-				{pid => process}
-			end
-			
-			Process::Metrics::Host::Memory.define_singleton_method(:capture) do
-				Process::Metrics::Host::Memory.new(1024 * 1024 * 1024, 512 * 1024 * 1024, nil, nil, nil)
-			end
-			
-			task.metrics(pid: 1234)
-		ensure
-			Process::Metrics::General.define_singleton_method(:capture, general_capture)
-			Process::Metrics::Host::Memory.define_singleton_method(:capture, host_memory_capture)
-		end
+		process = Process::Metrics::General.new(
+			1234,
+			nil,
+			nil,
+			0.0,
+			0,
+			110 * 1024 * 1024,
+			0.0,
+			0.0,
+			0.0,
+			"test process",
+			memory
+		)
+
+		expect(Process::Metrics::General).to receive(:capture).with_options(be == {pid: 1234, ppid: nil}).and_return(1234 => process)
+		expect(Process::Metrics::Host::Memory).to receive(:capture).and_return(Process::Metrics::Host::Memory.new(1024 * 1024 * 1024, 512 * 1024 * 1024, nil, nil, nil))
+
+		task.metrics(pid: 1234)
 		
 		line = terminal.lines.find{|line| line.include?("Memory (Total):")}
 		
