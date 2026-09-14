@@ -48,6 +48,10 @@ describe "process:metrics bake task" do
 	
 	let(:terminal) {FakeTerminal.new}
 	
+	def host_memory
+		Process::Metrics::Host::Memory.new(1024 * 1024 * 1024, 512 * 1024 * 1024, nil, nil, nil)
+	end
+	
 	it "does not add private memory to proportional memory in the summary total" do
 		memory = Process::Metrics::Memory.new(
 			1,
@@ -78,15 +82,40 @@ describe "process:metrics bake task" do
 			"test process",
 			memory
 		)
-
+		
 		expect(Process::Metrics::General).to receive(:capture).with_options(be == {pid: 1234, ppid: nil}).and_return(1234 => process)
-		expect(Process::Metrics::Host::Memory).to receive(:capture).and_return(Process::Metrics::Host::Memory.new(1024 * 1024 * 1024, 512 * 1024 * 1024, nil, nil, nil))
-
+		expect(Process::Metrics::Host::Memory).to receive(:capture).and_return(host_memory)
+		
 		task.metrics(pid: 1234)
 		
 		line = terminal.lines.find{|line| line.include?("Memory (Total):")}
 		
 		expect(line).to be(:include?, "100.0MiB")
 		expect(line).not.to be(:include?, "190.0MiB")
+	end
+	
+	it "uses resident memory in the summary total when detailed memory is unavailable" do
+		process = Process::Metrics::General.new(
+			1234,
+			nil,
+			nil,
+			0.0,
+			0,
+			110 * 1024 * 1024,
+			0.0,
+			0.0,
+			0.0,
+			"test process",
+			nil
+		)
+		
+		expect(Process::Metrics::General).to receive(:capture).with_options(be == {pid: 1234, ppid: nil}).and_return(1234 => process)
+		expect(Process::Metrics::Host::Memory).to receive(:capture).and_return(host_memory)
+		
+		task.metrics(pid: 1234)
+		
+		line = terminal.lines.find{|line| line.include?("Memory (Total):")}
+		
+		expect(line).to be(:include?, "110.0MiB")
 	end
 end
