@@ -38,7 +38,7 @@ def metrics(pid: nil, ppid: nil)
 	
 	summary = Process::Metrics::General.capture(pid: pid, ppid: ppid)
 	
-	shared_memory = 0
+	process_memory = 0
 	private_memory = 0
 	total_memory = host.total_size
 	
@@ -52,7 +52,7 @@ def metrics(pid: nil, ppid: nil)
 		terminal.print_line
 		
 		if memory = general.memory
-			shared_memory += memory.proportional_size
+			process_memory += memory.proportional_size
 			private_memory += memory.unique_size
 			
 			terminal.print_line(
@@ -65,7 +65,7 @@ def metrics(pid: nil, ppid: nil)
 				format_memory[memory.unique_size, total_memory]
 			)
 		else
-			shared_memory += general.resident_size
+			process_memory += general.resident_size
 			proportional = false
 			
 			terminal.print_line(
@@ -80,7 +80,7 @@ def metrics(pid: nil, ppid: nil)
 	if proportional
 		terminal.print_line(
 			:key, "Memory: ".rjust(20), :reset,
-			format_memory[shared_memory, total_memory]
+			format_memory[process_memory, total_memory]
 		)
 		
 		terminal.print_line(
@@ -90,13 +90,13 @@ def metrics(pid: nil, ppid: nil)
 	else
 		terminal.print_line(
 			:key, "Memory: ".rjust(20), :reset,
-			format_memory[shared_memory, total_memory]
+			format_memory[process_memory, total_memory]
 		)
 	end
 	
 	terminal.print_line(
 		:key, "Memory (Total): ".rjust(20), :reset,
-		format_memory[shared_memory + private_memory, total_memory]
+		format_memory[process_memory, total_memory]
 	)
 end
 
