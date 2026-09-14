@@ -10,9 +10,10 @@ describe "process:metrics bake task" do
 	class FakeTerminal
 		attr_reader :lines
 		
-		def initialize
+		def initialize(width: 80)
 			@lines = []
 			@current = +""
+			@width = width
 		end
 		
 		def print(*arguments)
@@ -26,14 +27,19 @@ describe "process:metrics bake task" do
 		end
 		
 		def width
-			80
+			@width
 		end
 	end
 	
-	let(:task) do
+	let(:metrics_module) do
 		mod = Module.new
 		path = File.expand_path("../../../bake/process/metrics.rb", __dir__)
-		mod.module_eval(File.read(path), path)
+		mod.module_eval(File.read(path))
+		mod
+	end
+	
+	let(:task) do
+		mod = metrics_module
 		
 		terminal = self.terminal
 		Class.new do
